@@ -8,7 +8,7 @@ Open a supported WIF (Weaving Information File), choose which pedals may be pres
 
 [Run locally](#run-locally) · [Supported WIF profile](docs/wif.md)
 
-![A feasible eight-shaft draft with pedal 1 fixed to shafts 2 and 4, allowed physical pairs and its pressing sequence](docs/workflow.png)
+![A checked eight-shaft draft showing selected pick 1, physical pedals 4 and 8, and the preserved adapted drawdown](docs/workflow.jpg)
 
 ## Run locally
 
@@ -23,7 +23,7 @@ python -m sley
 Or install the release wheel, then launch:
 
 ```sh
-python -m pip install ./sley-0.2.0-py3-none-any.whl
+python -m pip install ./sley-0.2.1-py3-none-any.whl
 sley
 ```
 

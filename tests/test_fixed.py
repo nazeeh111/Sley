@@ -5,6 +5,7 @@ from pathlib import Path
 import unittest
 import zipfile
 
+from sley import __version__
 from sley.engine import prepare, solve_request, export_bundle, imported, validate_project
 from sley.solver import solve
 from sley.wif import import_wif
@@ -60,7 +61,7 @@ class FixedTests(unittest.TestCase):
         self.assertEqual(imported(FIXTURE)['source_tie_up'], [[1], [2], []])
         with zipfile.ZipFile(io.BytesIO(export_bundle(payload, result))) as archive:
             output = import_wif(archive.read('adapted.wif').decode())
-            self.assertEqual(output.sections['WIF']['SOURCE VERSION'], '0.2.0')
+            self.assertEqual(output.sections['WIF']['SOURCE VERSION'], __version__)
             self.assertEqual(output.liftplan, import_wif(FIXTURE).liftplan)
             self.assertEqual(output.sections['TIEUP']['1'], '1')
             self.assertEqual(output.sections['TIEUP']['3'], '0')

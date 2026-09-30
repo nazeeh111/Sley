@@ -167,6 +167,37 @@
             </svg>
           </div>
           <div id="grid-loaded" hidden>
+            <section class="pick" aria-labelledby="pick-title">
+              <div class="section-heading">
+                <h2 id="pick-title">Selected pick</h2>
+              </div>
+              <div class="pick-controls">
+                <button id="pick-prev" aria-label="Previous pick" disabled>←</button
+                ><label for="pick-number"
+                  >Pick
+                  <input
+                    id="pick-number"
+                    type="number"
+                    min="1"
+                    value="1"
+                    disabled /></label
+                ><span id="pick-total">of —</span
+                ><button id="pick-next" aria-label="Next pick" disabled>→</button>
+              </div>
+              <dl class="pick-details">
+                <div>
+                  <dt>Raised shafts</dt>
+                  <dd id="pick-shafts">—</dd>
+                </div>
+                <div>
+                  <dt>Press physical pedals</dt>
+                  <dd id="pick-action">—</dd>
+                </div>
+              </dl>
+              <p id="pick-note" class="hint">
+                Physical pedal numbers match the exported WIF and action sheet.
+              </p>
+            </section>
             <div class="grid-legend">
               <span><i class="warp-swatch"></i>Warp above</span
               ><span><i class="weft-swatch"></i>Weft above</span
@@ -202,37 +233,6 @@
         </section>
       </div>
       <div class="inspection">
-        <section class="pick panel" aria-labelledby="pick-title">
-          <div class="section-heading">
-            <h2 id="pick-title">Selected pick</h2>
-          </div>
-          <div class="pick-controls">
-            <button id="pick-prev" aria-label="Previous pick" disabled>←</button
-            ><label for="pick-number"
-              >Pick
-              <input
-                id="pick-number"
-                type="number"
-                min="1"
-                value="1"
-                disabled /></label
-            ><span id="pick-total">of —</span
-            ><button id="pick-next" aria-label="Next pick" disabled>→</button>
-          </div>
-          <dl class="pick-details">
-            <div>
-              <dt>Raised shafts</dt>
-              <dd id="pick-shafts">—</dd>
-            </div>
-            <div>
-              <dt>Press physical pedals</dt>
-              <dd id="pick-action">—</dd>
-            </div>
-          </dl>
-          <p id="pick-note" class="hint">
-            Physical pedal numbers match the exported WIF and action sheet.
-          </p>
-        </section>
         <section class="tieup panel" aria-labelledby="tieup-title">
           <div class="section-heading">
             <h2 id="tieup-title">Physical tie-up</h2>
