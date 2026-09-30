@@ -7,13 +7,14 @@ import json
 from pathlib import Path
 import zipfile
 
-from .solver import duplicate_guard, validate
-from .wif import import_wif, adapt, export_wif, scalar
+from .solver import duplicate_guard, validate, fixed_assignments
+from .wif import import_wif, adapt, export_wif, scalar, rows
 
 MAX_BODY = 16 * 1024 * 1024  # Includes a 7 MiB project string escaped inside JSON.
 MAX_PROJECT = 7 * 1024 * 1024
 MAX_WIF = 1024 * 1024
 CHECK_WORK = 500_000
+_UNSET = object()
 
 
 def exact_keys(value, expected, name="request"):
@@ -46,14 +47,16 @@ def constraints(count, pairs):
     return slots, sorted([sorted(pair) for pair in pairs])
 
 
-def prepare(wif, slot_count=None, allowed_pairs=None):
+def prepare(wif, slot_count=_UNSET, allowed_pairs=None, fixed_tie_up=_UNSET):
     document = import_wif(wif)
     if len({tuple(lift) for lift in document.liftplan}) > 128:
         raise ValueError("supported limit: at most 128 distinct lift sets per draft")
     payload = {"wif": wif}
-    if slot_count is not None:
+    if slot_count is not _UNSET:
         _, normalized = constraints(slot_count, allowed_pairs)
-        payload.update(slot_count=slot_count, allowed_pairs=normalized)
+        fixed = fixed_assignments([None] * slot_count if fixed_tie_up is _UNSET else fixed_tie_up,
+                                  slot_count, document.shafts)
+        payload.update(slot_count=slot_count, allowed_pairs=normalized, fixed_tie_up=fixed)
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
     return document, payload, digest
 
@@ -77,6 +80,10 @@ def imported(wif):
     return {"digest": digest, "title": sections.get("TEXT", {}).get("TITLE", "Untitled draft"),
             "shafts": document.shafts, "ends": len(document.threading), "picks": len(document.liftplan),
             "threading": document.threading, "liftplan": document.liftplan,
+            "source_tie_up": (rows(sections["TIEUP"],
+                                    scalar(sections["WEAVING"]["TREADLES"], 1, 64, "source treadles"),
+                                    document.shafts, "TIEUP")
+                               if document.mode == "tieup_treadling" else None),
             "warp_colors": expanded("WARP", len(document.threading), "#ddd9cf"),
             "weft_colors": expanded("WEFT", len(document.liftplan), "#394348")}
 
@@ -85,21 +92,24 @@ def validate_project(raw):
     if type(raw) is not str or len(raw.encode("utf-8")) > MAX_PROJECT:
         raise ValueError("project exceeds the 7 MiB UTF-8 file limit")
     project = parse_json(raw)
-    exact_keys(project, {"format", "version", "wif", "slot_count", "allowed_pairs"}, "project")
-    if project["format"] != "sley-project" or type(project["version"]) is not int or project["version"] != 1:
-        raise ValueError("project requires format sley-project and version 1")
-    prepare(project["wif"], project["slot_count"], project["allowed_pairs"])
-    return project
+    if type(project) is not dict or project.get("format") != "sley-project" or type(project.get("version")) is not int or project["version"] not in (1, 2):
+        raise ValueError("project requires format sley-project and version 1 or 2")
+    keys = {"format", "version", "wif", "slot_count", "allowed_pairs"}
+    exact_keys(project, keys if project["version"] == 1 else keys | {"fixed_tie_up"}, "project")
+    fields = {k: v for k, v in project.items() if k not in {"format", "version"}}
+    _, normalized, _ = prepare(**fields)
+    return {"format": "sley-project", "version": 2, **normalized}
 
 
 def solve_request(payload):
     document, normalized, _ = prepare(**payload)
     slots, pairs = constraints(normalized["slot_count"], normalized["allowed_pairs"])
-    return adapt(document, slots, pairs, work_limit=CHECK_WORK, seconds=5)
+    return adapt(document, slots, pairs, fixed_tie_up=normalized["fixed_tie_up"], work_limit=CHECK_WORK, seconds=5)
 
 
 def public_result(result):
     response = {k: result[k] for k in ("status", "work", "work_limit", "elapsed_seconds")}
+    response["declared_fixed_tie_up"] = result["declared_fixed_tie_up"]
     if result["status"] == "feasible":
         response["tie_up"] = [{"physical_slot": row["physical_slot"], "raises": row["raises"]} for row in result["tie_up"]]
         response["picks"] = [{k: row[k] for k in ("pick", "physical_slots", "raised_shafts")} for row in result["picks"]]
@@ -110,8 +120,20 @@ def export_bundle(payload, result):
     document, normalized, _ = prepare(**payload)
     if result["status"] != "feasible" or result["declared_allowed_pairs"] != normalized["allowed_pairs"]:
         raise ValueError("export requires the completed current feasible plan")
-    if len(result["tie_up"]) != normalized["slot_count"]:
+    if result.get("declared_fixed_tie_up") != normalized["fixed_tie_up"]:
+        raise ValueError("fixed pedal assignments changed")
+    count = normalized["slot_count"]
+    rows_by_slot = {}
+    for row in result["tie_up"]:
+        slot = row["physical_slot"]
+        if type(slot) is not int or not 1 <= slot <= count or slot in rows_by_slot:
+            raise ValueError("plan must retain unique declared physical pedal positions")
+        rows_by_slot[slot] = row
+    if set(rows_by_slot) != set(range(1, count + 1)):
         raise ValueError("physical slot count changed")
+    for slot, fixed in enumerate(normalized["fixed_tie_up"], 1):
+        if fixed is not None and rows_by_slot[slot]["raises"] != fixed:
+            raise ValueError("plan changed an exact fixed pedal assignment")
     wif = export_wif(document, result)
     actions = io.StringIO(newline="")
     writer = csv.writer(actions)
@@ -119,7 +141,7 @@ def export_bundle(payload, result):
     for row in result["picks"]:
         writer.writerow([row["pick"], " ".join(map(str, row["raised_shafts"])), " ".join(map(str, row["physical_slots"]))])
     title = html.escape(document.sections.get("TEXT", {}).get("TITLE", "Untitled draft"))
-    sheet = f'<!doctype html><html lang="en"><meta charset="utf-8"><title>{title}</title><style>body{{font:14px system-ui;margin:2rem;color:#222}}table{{border-collapse:collapse;margin-bottom:2rem}}td,th{{border:1px solid #bbb;padding:.3rem .6rem;text-align:left}}@media print{{tr{{break-inside:avoid}}}}</style><h1>{title}</h1><p>WIF treadle numbers equal physical pedal positions. Unused positions remain untied.</p><h2>Tie-up</h2><table><tr><th>Physical pedal</th><th>Raised shafts</th></tr>'
+    sheet = f'<!doctype html><html lang="en"><meta charset="utf-8"><title>{title}</title><style>body{{font:14px system-ui;margin:2rem;color:#222}}table{{border-collapse:collapse;margin-bottom:2rem}}td,th{{border:1px solid #bbb;padding:.3rem .6rem;text-align:left}}@media print{{tr{{break-inside:avoid}}}}</style><h1>{title}</h1><p>WIF treadle numbers equal physical pedal positions. Fixed assignments remain exact, including pedals that are never pressed.</p><h2>Tie-up</h2><table><tr><th>Physical pedal</th><th>Raised shafts</th></tr>'
     for row in result["tie_up"]:
         sheet += f'<tr><td>{row["physical_slot"]}</td><td>{", ".join(map(str,row["raises"])) or "Untied"}</td></tr>'
     sheet += '</table><h2>Pressing sequence</h2><table><tr><th>Pick</th><th>Physical pedals</th><th>Raised shafts</th></tr>'

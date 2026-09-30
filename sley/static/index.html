@@ -62,6 +62,44 @@
           <p class="hint">
             Each pick uses one pedal, an allowed pair, or no pedals for a rest.
           </p>
+          <fieldset class="fixed-editor">
+            <legend>Fixed pedal tie-up</legend>
+            <p class="hint">
+              Free pedals may be assigned. Fixed pedals raise exactly the
+              selected shafts.
+            </p>
+            <div class="fixed-selectors">
+              <label
+                >Physical pedal<select id="fixed-pedal" disabled></select
+              ></label>
+              <label
+                >Assignment<select id="fixed-mode" disabled>
+                  <option value="free">Free</option>
+                  <option value="fixed">Fixed</option>
+                </select></label
+              >
+            </div>
+            <p id="fixed-selected" class="hint"></p>
+            <div
+              id="fixed-shafts"
+              class="fixed-shafts"
+              role="group"
+              aria-label="Exact raised shafts for selected fixed pedal"
+            ></div>
+            <div class="fixed-actions">
+              <button id="fixed-untied" disabled>Keep untied</button
+              ><button id="copy-source-pedal" disabled>
+                Copy input pedal tie-up
+              </button>
+            </div>
+            <p id="fixed-source-note" class="hint">
+              No supported input tie-up for this pedal.
+            </p>
+            <details>
+              <summary>All pedal assignments</summary>
+              <ol id="fixed-summary"></ol>
+            </details>
+          </fieldset>
           <fieldset class="presets">
             <legend>Pair presets</legend>
             <div class="preset-buttons">

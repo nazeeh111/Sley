@@ -1,6 +1,8 @@
 import {
   MAX_WIF_BYTES,
   validateProject,
+  validateFixedTieUp,
+  resizeFixedTieUp,
   pairPreset,
   boundedWindow,
   Revision,
@@ -14,6 +16,8 @@ const state = {
   wif: "",
   slots: 8,
   pairs: pairPreset(8, "all"),
+  fixed: Array(8).fill(null),
+  pedal: 0,
   selected: 0,
   end: 0,
   pick: 0,
@@ -90,10 +94,11 @@ function invalidate(detail = "Constraints changed. Find a new plan.") {
 function project() {
   return validateProject({
     format: "sley-project",
-    version: 1,
+    version: 2,
     wif: state.wif,
     slot_count: state.slots,
     allowed_pairs: state.pairs,
+    fixed_tie_up: state.fixed,
   });
 }
 function download(blob, name) {
@@ -124,9 +129,18 @@ async function importText(
     throw new Error("WIF exceeds the 1 MiB input limit.");
   const draft = await api("/api/import", { wif });
   if (serial !== state.importSerial || !revision.current(token)) return false;
+  const fixed = constraints
+    ? validateFixedTieUp(
+        constraints.fixed_tie_up ?? Array(constraints.slot_count).fill(null),
+        constraints.slot_count,
+        draft.shafts,
+      )
+    : Array(state.slots).fill(null);
   invalidate("Draft loaded. Set constraints, then find a plan.");
   state.wif = wif;
   state.draft = draft;
+  state.fixed = fixed;
+  state.pedal = 0;
   state.selected = 0;
   state.end = 0;
   state.pick = 0;
@@ -146,6 +160,7 @@ async function importText(
   $("pick-number").max = String(draft.picks);
   $("pick-number").disabled = false;
   renderPairs();
+  renderFixed();
   controls();
   renderPick();
   renderTieup();
@@ -267,11 +282,108 @@ function renderPairs() {
     }
   $("pair-count").textContent = `${state.pairs.length} allowed`;
 }
+function fixedLabel(raises) {
+  return raises === null
+    ? "Free · solver assigns"
+    : raises.length
+      ? `Fixed · shafts ${raises.join(", ")}`
+      : "Fixed · keep untied";
+}
+function renderFixedSummary() {
+  $("fixed-summary").replaceChildren();
+  state.fixed.forEach((raises, i) => {
+    const row = document.createElement("li");
+    row.textContent = `Pedal ${i + 1}: ${fixedLabel(raises)}`;
+    $("fixed-summary").append(row);
+  });
+}
+function renderFixed() {
+  const selector = $("fixed-pedal");
+  selector.replaceChildren();
+  for (let i = 0; i < state.slots; i++) {
+    const option = document.createElement("option");
+    option.value = String(i);
+    option.textContent = `Pedal ${i + 1}`;
+    selector.append(option);
+  }
+  selector.value = String(state.pedal);
+  selector.disabled = !state.draft;
+  const raises = state.fixed[state.pedal];
+  $("fixed-selected").textContent =
+    `Pedal ${state.pedal + 1}: ${fixedLabel(raises)}`;
+  $("fixed-mode").value = raises === null ? "free" : "fixed";
+  $("fixed-mode").disabled = !state.draft;
+  $("fixed-shafts").replaceChildren();
+  for (let shaft = 1; shaft <= (state.draft?.shafts || 0); shaft++) {
+    const label = document.createElement("label"),
+      input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = raises?.includes(shaft) || false;
+    input.disabled = raises === null;
+    input.setAttribute(
+      "aria-label",
+      `Pedal ${state.pedal + 1} raises shaft ${shaft}`,
+    );
+    input.addEventListener("change", () => {
+      const selected = new Set(state.fixed[state.pedal]);
+      input.checked ? selected.add(shaft) : selected.delete(shaft);
+      state.fixed[state.pedal] = [...selected].sort((a, b) => a - b);
+      invalidate();
+      $("fixed-selected").textContent =
+        `Pedal ${state.pedal + 1}: ${fixedLabel(state.fixed[state.pedal])}`;
+      renderFixedSummary();
+    });
+    label.append(input, document.createTextNode(`Shaft ${shaft}`));
+    $("fixed-shafts").append(label);
+  }
+  $("fixed-untied").disabled = !state.draft;
+  const source = state.draft?.source_tie_up;
+  $("copy-source-pedal").disabled =
+    !Array.isArray(source) || state.pedal >= source.length;
+  $("copy-source-pedal").textContent =
+    `Copy input pedal ${state.pedal + 1} tie-up`;
+  $("fixed-source-note").textContent =
+    Array.isArray(source) && state.pedal < source.length
+      ? `Input pedal ${state.pedal + 1} raises ${source[state.pedal].join(", ") || "no shafts"}. Copies only this pedal.`
+      : "No supported input tie-up for this pedal.";
+  renderFixedSummary();
+}
+$("fixed-pedal").addEventListener("change", () => {
+  state.pedal = Number($("fixed-pedal").value);
+  renderFixed();
+});
+$("fixed-mode").addEventListener("change", () => {
+  state.fixed[state.pedal] = $("fixed-mode").value === "free" ? null : [];
+  invalidate();
+  renderFixed();
+});
+$("fixed-untied").addEventListener("click", () => {
+  state.fixed[state.pedal] = [];
+  invalidate();
+  renderFixed();
+});
+$("copy-source-pedal").addEventListener("click", () => {
+  const source = state.draft?.source_tie_up;
+  if (!Array.isArray(source) || state.pedal >= source.length) return;
+  state.fixed[state.pedal] = [...source[state.pedal]];
+  invalidate();
+  renderFixed();
+});
 $("slot-count").addEventListener("change", () => {
-  state.slots = Number($("slot-count").value);
+  const slots = Number($("slot-count").value);
+  try {
+    state.fixed = resizeFixedTieUp(state.fixed, slots);
+  } catch (error) {
+    $("slot-count").value = String(state.slots);
+    message(error.message, true);
+    return;
+  }
+  state.slots = slots;
+  state.pedal = Math.min(state.pedal, slots - 1);
   state.pairs = state.pairs.filter((pair) => pair[1] <= state.slots);
   invalidate();
   renderPairs();
+  renderFixed();
   $("pair-note").textContent =
     "Press a pair to allow or disallow it. Presets remain editable.";
 });
@@ -299,6 +411,7 @@ $("solve").addEventListener("click", async () => {
       wif: state.wif,
       slot_count: state.slots,
       allowed_pairs: state.pairs,
+      fixed_tie_up: state.fixed,
     });
     if (!revision.current(token)) {
       cancelRemote({ id: started.job_id });

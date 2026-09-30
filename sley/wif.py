@@ -4,6 +4,7 @@ import hashlib
 import re
 
 from .solver import solve
+from . import __version__
 
 
 CONTROL = {"WIF", "CONTENTS", "WEAVING", "TIEUP", "TREADLING", "LIFTPLAN"}
@@ -230,7 +231,7 @@ def drawdown_digest(threading, lifts):
     return digest.hexdigest()
 
 
-def adapt(document, slots, allowed_pairs, **limits):
+def adapt(document, slots, allowed_pairs, fixed_tie_up=None, **limits):
     # Search depends on distinct lifts, not repetitions or warp positions.
     # Solve the entire family together; never combine independent tie-ups.
     unique_lifts = list(dict.fromkeys(tuple(lift) for lift in document.liftplan))
@@ -239,7 +240,8 @@ def adapt(document, slots, allowed_pairs, **limits):
     project = {"model": "rising_shed_union", "shafts": document.shafts,
                "threading": sorted(set(document.threading) - {0}),
                "slots": slots, "allowed_pairs": allowed_pairs,
-               "liftplan": [list(lift) for lift in unique_lifts]}
+               "liftplan": [list(lift) for lift in unique_lifts],
+               "fixed_tie_up": [None] * len(slots) if fixed_tie_up is None else fixed_tie_up}
     result = solve(project, **limits)
     result.pop("drawdown", None)
     result.pop("threading", None)
@@ -268,7 +270,7 @@ def output_prefix(document, slot_count):
     rewritten = CONTROL
     kept = {k: v for k, v in document.blocks.items() if k not in rewritten}
     header = dict(document.sections["WIF"])
-    header.update({"SOURCE PROGRAM": "Sley", "SOURCE VERSION": "0.1.0"})
+    header.update({"SOURCE PROGRAM": "Sley", "SOURCE VERSION": __version__})
     weaving = {"SHAFTS": str(document.shafts), "TREADLES": str(slot_count), "RISING SHED": "true"}
     flags = {k: v for k, v in document.sections["CONTENTS"].items() if k not in rewritten}
     flags.update({k: "true" for k in [*kept, "WEAVING", "TIEUP", "TREADLING"]})
@@ -329,4 +331,3 @@ def export_wif(document, result):
         if reopened.blocks[name].rstrip("\n") != block.rstrip("\n"):
             raise ValueError(f"export altered independent section: {name}")
     return output
-

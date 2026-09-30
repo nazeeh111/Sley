@@ -1,3 +1,4 @@
+import * as model from "./model.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -19,7 +20,11 @@ const valid = {
   ],
 };
 test("portable project preserves original text and constraints without result state", () => {
-  assert.deepEqual(validateProject(JSON.parse(JSON.stringify(valid))), valid);
+  assert.deepEqual(validateProject(JSON.parse(JSON.stringify(valid))), {
+    ...valid,
+    version: 2,
+    fixed_tie_up: [null, null, null, null],
+  });
   for (const change of [
     { version: 2 },
     { result: {} },
@@ -95,4 +100,37 @@ test("invalid UTF-8 input is refused instead of silently replacing source bytes"
 
 test("UTF-8 BOM stays in the original text rather than being silently removed", () => {
   assert.equal(decodeText(new Uint8Array([0xef, 0xbb, 0xbf, 65])), "\ufeffA");
+});
+
+const fixedProject = {
+  ...valid,
+  version: 2,
+  fixed_tie_up: [[1], null, [], [2, 4]],
+};
+test("version 2 preserves fixed empty and free pedals as different constraints", () => {
+  const opened = validateProject(JSON.parse(JSON.stringify(fixedProject)));
+  assert.deepEqual(opened.fixed_tie_up, [[1], null, [], [2, 4]]);
+  opened.fixed_tie_up[0].push(2);
+  assert.deepEqual(fixedProject.fixed_tie_up, [[1], null, [], [2, 4]]);
+  for (const fixed_tie_up of [
+    [null],
+    [[1], null, [], [4, 2]],
+    [[1], null, [], [2, 2]],
+    [[0], null, [], null],
+    [[9], null, [], null],
+    [false, null, [], null],
+  ])
+    assert.throws(() => validateProject({ ...fixedProject, fixed_tie_up }));
+});
+test("pedal resizing refuses removal of fixed empty or raised pedals", () => {
+  assert.throws(() => model.resizeFixedTieUp([[1], null, []], 2));
+  assert.throws(() => model.resizeFixedTieUp([null, [2]], 1));
+  assert.deepEqual(model.resizeFixedTieUp([[1], null, null], 2), [[1], null]);
+  assert.deepEqual(model.resizeFixedTieUp([[1], null, []], 5), [
+    [1],
+    null,
+    [],
+    null,
+    null,
+  ]);
 });

@@ -1,6 +1,16 @@
 export const MAX_WIF_BYTES = 1024 * 1024;
 export function validateProject(value) {
-  const keys = ["allowed_pairs", "format", "slot_count", "version", "wif"];
+  const keys =
+    value?.version === 2
+      ? [
+          "allowed_pairs",
+          "fixed_tie_up",
+          "format",
+          "slot_count",
+          "version",
+          "wif",
+        ]
+      : ["allowed_pairs", "format", "slot_count", "version", "wif"];
   if (
     !value ||
     typeof value !== "object" ||
@@ -10,7 +20,7 @@ export function validateProject(value) {
     throw new Error(
       "Project must contain only format, version, WIF and pedal constraints.",
     );
-  if (value.format !== "sley-project" || value.version !== 1)
+  if (value.format !== "sley-project" || ![1, 2].includes(value.version))
     throw new Error("Unsupported project format or version.");
   if (
     typeof value.wif !== "string" ||
@@ -45,10 +55,16 @@ export function validateProject(value) {
   }
   return {
     format: value.format,
-    version: value.version,
+    version: 2,
     wif: value.wif,
     slot_count: value.slot_count,
     allowed_pairs: value.allowed_pairs.map((pair) => [...pair]),
+    fixed_tie_up: validateFixedTieUp(
+      value.version === 1
+        ? Array(value.slot_count).fill(null)
+        : value.fixed_tie_up,
+      value.slot_count,
+    ),
   };
 }
 export function pairPreset(slots, mode) {
@@ -91,5 +107,38 @@ export function fabricColor(draft, end, pick, raised = draft.liftplan[pick]) {
 export function decodeText(bytes) {
   return new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(
     bytes,
+  );
+}
+
+export function validateFixedTieUp(fixed, slots, shafts = 8) {
+  if (!Array.isArray(fixed) || fixed.length !== slots)
+    throw new Error("Fixed tie-up must contain one entry per physical pedal.");
+  return fixed.map((raises) => {
+    if (raises === null) return null;
+    if (
+      !Array.isArray(raises) ||
+      raises.some(
+        (shaft, i) =>
+          !Number.isInteger(shaft) ||
+          shaft < 1 ||
+          shaft > shafts ||
+          (i > 0 && shaft <= raises[i - 1]),
+      )
+    )
+      throw new Error(
+        "Fixed shafts must be distinct ascending shaft numbers in this draft.",
+      );
+    return [...raises];
+  });
+}
+export function resizeFixedTieUp(fixed, slots) {
+  if (!Number.isInteger(slots) || slots < 1 || slots > 10)
+    throw new Error("Physical pedal count must be between 1 and 10.");
+  if (fixed.slice(slots).some((raises) => raises !== null))
+    throw new Error(
+      "Make removed pedals free before reducing the physical pedal count.",
+    );
+  return Array.from({ length: slots }, (_, i) =>
+    fixed[i] === undefined || fixed[i] === null ? null : [...fixed[i]],
   );
 }
