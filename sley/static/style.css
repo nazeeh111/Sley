@@ -245,8 +245,8 @@ main {
 }
 .pair-scroll {
   overflow: auto;
-  padding: 2px 2px 5px;
-  margin: 0 -2px;
+  padding: 6px 6px 8px;
+  margin: 0 -6px;
 }
 .pair-matrix {
   display: grid;
@@ -255,12 +255,12 @@ main {
 }
 .pair-cell,
 .pair-axis {
-  width: 20px;
-  height: 20px;
-  min-height: 20px;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
   padding: 0;
   text-align: center;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   display: grid;
   place-items: center;
@@ -280,8 +280,8 @@ main {
   line-height: 1;
 }
 .pair-blank {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   background: #f2f4f7;
   border-radius: 2px;
 }
@@ -499,20 +499,25 @@ canvas {
   margin-top: 11px;
 }
 .inspection {
-  display: grid;
-  grid-template-columns: 288px minmax(0, 1fr);
-  gap: 16px;
   margin-top: 16px;
 }
-.pick,
 .tieup {
   padding: 18px 20px;
+}
+.pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
 }
 .pick-controls {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 17px;
+  flex-wrap: wrap;
   font-size: 11px;
 }
 .pick-controls button {
@@ -532,13 +537,19 @@ canvas {
   color: var(--muted);
 }
 .pick-details {
-  margin: 17px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 0;
 }
 .pick-details div {
   display: grid;
   grid-template-columns: 1fr;
   gap: 5px;
-  margin-top: 13px;
+}
+.pick > .hint {
+  width: 100%;
+  margin-top: 0;
 }
 .pick-details dt {
   font-size: 10px;
@@ -638,16 +649,8 @@ button.busy {
   display: none !important;
 }
 @media (min-width: 1400px) {
-  .workbench,
-  .inspection {
+  .workbench {
     grid-template-columns: 310px minmax(0, 1fr);
-  }
-  .pair-cell,
-  .pair-axis,
-  .pair-blank {
-    width: 22px;
-    height: 22px;
-    min-height: 22px;
   }
 }
 @media (max-width: 800px) {
@@ -661,24 +664,12 @@ button.busy {
     grid-template-columns: 235px minmax(0, 1fr);
     gap: 12px;
   }
-  .inspection {
-    grid-template-columns: 235px minmax(0, 1fr);
-    gap: 12px;
-  }
   .constraints {
     padding: 14px;
   }
   .draft,
-  .tieup,
-  .pick {
+  .tieup {
     padding: 14px;
-  }
-  .pair-cell,
-  .pair-axis,
-  .pair-blank {
-    width: 17px;
-    height: 19px;
-    min-height: 19px;
   }
   .preset-buttons button {
     font-size: 9px;
@@ -735,9 +726,6 @@ button.busy {
   .constraints {
     padding: 16px;
   }
-  .inspection {
-    grid-template-columns: 1fr;
-  }
   .file-bar {
     gap: 6px;
   }
@@ -762,13 +750,6 @@ button.busy {
   .grid-help {
     max-width: 320px;
   }
-  .pair-cell,
-  .pair-axis,
-  .pair-blank {
-    width: 25px;
-    height: 25px;
-    min-height: 25px;
-  }
   .pair-matrix {
     gap: 4px;
   }
@@ -787,10 +768,6 @@ button.busy {
   }
   .tieup-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-  .pick-details div {
-    grid-template-columns: 120px 1fr;
-    align-items: start;
   }
   footer {
     flex-direction: column;
