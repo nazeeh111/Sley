@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sley"
+version = "0.1.0"
+description = "Local weaving draft adaptation with physical pedal-pair constraints"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Nazeeh Abdul-Hadi"}]
+dependencies = []
+
+[project.scripts]
+sley = "sley.__main__:main"
+
+[tool.setuptools]
+packages = ["sley"]
+
+[tool.setuptools.package-data]
+sley = ["static/index.html", "static/app.js", "static/model.mjs", "static/style.css", "static/favicon.svg", "examples/*.wif"]

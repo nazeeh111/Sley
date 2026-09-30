@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sley · Draft adapter</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="brand" href="/" aria-label="Sley home"
+        ><svg viewBox="0 0 28 28" aria-hidden="true">
+          <path d="M3 5h22M3 14h22M3 23h22M7 2v24M14 2v24M21 2v24" />
+          <path class="mark-cross" d="M7 5h7v9h7v9" /></svg
+        ><span>Sley</span></a
+      ><span class="app-kind">Draft adapter</span>
+    </header>
+    <main>
+      <div class="file-bar" aria-label="Draft files">
+        <button id="open-wif">Open WIF</button
+        ><button id="example">Load example</button
+        ><span class="toolbar-divider"></span
+        ><button id="open-project">Open project</button
+        ><button id="save-project" disabled>Save project</button
+        ><input
+          id="wif-file"
+          type="file"
+          accept=".wif,text/plain"
+          hidden
+        /><input
+          id="project-file"
+          type="file"
+          accept=".json,application/json"
+          hidden
+        /><span id="file-state"></span>
+      </div>
+      <div id="message" class="message" role="status" aria-live="polite">
+        Open a rising-shed WIF or load the eight-shaft example.
+      </div>
+      <div class="workbench">
+        <aside class="constraints panel" aria-labelledby="constraints-title">
+          <div class="section-heading">
+            <h2 id="constraints-title">Pedal constraints</h2>
+          </div>
+          <label class="field" for="slot-count"
+            >Physical pedals
+            <select id="slot-count">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+              <option>7</option>
+              <option selected>8</option>
+              <option>9</option>
+              <option>10</option>
+            </select></label
+          >
+          <p class="hint">
+            Each pick uses one pedal, an allowed pair, or no pedals for a rest.
+          </p>
+          <fieldset class="presets">
+            <legend>Pair presets</legend>
+            <div class="preset-buttons">
+              <button data-preset="all">All pairs</button
+              ><button data-preset="single">Single only</button
+              ><button data-preset="banks">Two banks</button>
+            </div>
+          </fieldset>
+          <div class="matrix-heading">
+            <h3>Allowed pairs</h3>
+            <span id="pair-count"></span>
+          </div>
+          <div class="pair-scroll">
+            <div
+              id="pair-matrix"
+              class="pair-matrix"
+              role="group"
+              aria-label="Allowed simultaneous physical pedal pairs"
+            ></div>
+          </div>
+          <p id="pair-note" class="hint">
+            Press a pair to allow or disallow it. Presets remain editable.
+          </p>
+          <div class="solve-controls">
+            <button id="solve" class="primary" disabled>
+              Find plan <span aria-hidden="true">→</span></button
+            ><button id="cancel" disabled>Cancel</button>
+          </div>
+          <div
+            id="solve-state"
+            class="solve-state"
+            role="status"
+            aria-live="polite"
+          >
+            <span id="status-badge" class="status-badge">No result</span>
+            <p id="status-detail"></p>
+          </div>
+          <button id="export" class="export-button" disabled>
+            Export result ZIP <span aria-hidden="true">↗</span>
+          </button>
+          <p class="hint export-hint">
+            Adapted WIF, physical pedal actions and a printable tie-up sheet.
+          </p>
+        </aside>
+        <section class="draft panel" aria-labelledby="draft-title">
+          <div class="draft-heading">
+            <div>
+              <div class="section-heading">
+                <h1 id="draft-title">Fabric draft</h1>
+              </div>
+              <p id="draft-meta" class="draft-meta"></p>
+            </div>
+            <div class="view-switch" role="group" aria-label="Drawdown view">
+              <button id="source-view" aria-pressed="true">Source</button
+              ><button id="adapted-view" aria-pressed="false" disabled>
+                Adapted
+              </button>
+            </div>
+          </div>
+          <div id="grid-empty" class="grid-empty">
+            <svg viewBox="0 0 96 96" aria-hidden="true">
+              <path
+                d="M16 24h64M16 40h64M16 56h64M16 72h64M24 16v64M40 16v64M56 16v64M72 16v64"
+              />
+            </svg>
+          </div>
+          <div id="grid-loaded" hidden>
+            <div class="grid-legend">
+              <span><i class="warp-swatch"></i>Warp above</span
+              ><span><i class="weft-swatch"></i>Weft above</span
+              ><span id="view-label">Source drawdown</span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas
+                id="fabric"
+                tabindex="0"
+                role="img"
+                aria-label="Fabric grid. Arrow keys select a pick or move across ends. Page Up and Page Down move the pick window."
+              ></canvas>
+            </div>
+            <div class="viewport-controls">
+              <div class="viewport-group">
+                <span>Ends</span
+                ><button id="ends-prev" aria-label="Previous ends">←</button
+                ><span id="ends-window"></span
+                ><button id="ends-next" aria-label="Next ends">→</button>
+              </div>
+              <div class="viewport-group">
+                <span>Picks</span
+                ><button id="picks-prev" aria-label="Previous picks">↑</button
+                ><span id="picks-window"></span
+                ><button id="picks-next" aria-label="Next picks">↓</button>
+              </div>
+            </div>
+            <p class="grid-help">
+              Select a row to inspect its pick. On the grid, use ↑ ↓ for picks,
+              ← → for ends and Page Up / Down for windows.
+            </p>
+          </div>
+        </section>
+      </div>
+      <div class="inspection">
+        <section class="pick panel" aria-labelledby="pick-title">
+          <div class="section-heading">
+            <h2 id="pick-title">Selected pick</h2>
+          </div>
+          <div class="pick-controls">
+            <button id="pick-prev" aria-label="Previous pick" disabled>←</button
+            ><label for="pick-number"
+              >Pick
+              <input
+                id="pick-number"
+                type="number"
+                min="1"
+                value="1"
+                disabled /></label
+            ><span id="pick-total">of —</span
+            ><button id="pick-next" aria-label="Next pick" disabled>→</button>
+          </div>
+          <dl class="pick-details">
+            <div>
+              <dt>Raised shafts</dt>
+              <dd id="pick-shafts">—</dd>
+            </div>
+            <div>
+              <dt>Press physical pedals</dt>
+              <dd id="pick-action">—</dd>
+            </div>
+          </dl>
+          <p id="pick-note" class="hint">
+            Physical pedal numbers match the exported WIF and action sheet.
+          </p>
+        </section>
+        <section class="tieup panel" aria-labelledby="tieup-title">
+          <div class="section-heading">
+            <h2 id="tieup-title">Physical tie-up</h2>
+            <span id="tieup-count" class="muted"></span>
+          </div>
+          <div id="tieup-grid" class="tieup-grid"></div>
+        </section>
+      </div>
+      <footer>
+        <span
+          >Supported profile: rising shed · up to 8 shafts · 10 physical
+          pedals</span
+        ><span>4,096 ends / picks · 1 MiB WIF · 128 distinct lifts</span>
+      </footer>
+    </main>
+  </body>
+</html>

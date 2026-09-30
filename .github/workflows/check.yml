@@ -1,0 +1,36 @@
+name: Check
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  browser-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Browser model tests and module syntax
+        run: |
+          node --test sley/static/model.test.mjs
+          node --check sley/static/app.js
+          node --check sley/static/model.mjs
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.12', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+      - run: python -m pip wheel --no-deps --wheel-dir dist .
+      - name: Installed wheel workflow outside checkout
+        run: |
+          python -m venv "$RUNNER_TEMP/sley-installed"
+          "$RUNNER_TEMP/sley-installed/bin/python" -m pip install --no-index --no-deps dist/*.whl
+          cp tests/installed_smoke.py "$RUNNER_TEMP/sley-installed-smoke.py"
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/sley-installed/bin/python" -I sley-installed-smoke.py
