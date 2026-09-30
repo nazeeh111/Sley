@@ -8,6 +8,8 @@ import zipfile
 
 from sley.engine import example
 from sley.server import make_server
+from test_fixed import FIXTURE, request as fixed_request
+from sley.wif import import_wif
 
 
 class ServerTests(unittest.TestCase):
@@ -59,6 +61,47 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.request("POST", "/api/import", raw=b'{"wif":"x","wif":"y"}')[0], 400)
         self.assertEqual(self.request("POST", "/api/project", {"project": '{"version":1,"version":1}'})[0], 400)
         self.assertEqual(self.request("POST", "/api/import", {"wif": "invalid"})[0], 400)
+
+    def test_fixed_setup_project_worker_export_and_changed_digest(self):
+        payload = fixed_request()
+        project = {"format": "sley-project", "version": 2, **payload}
+        code, body, _ = self.request("POST", "/api/project", {"project": json.dumps(project)})
+        self.assertEqual(code, 200)
+        self.assertEqual(json.loads(body)["project"], project)
+        code, body, _ = self.request("POST", "/api/import", {"wif": FIXTURE})
+        self.assertEqual(code, 200)
+        self.assertEqual(json.loads(body)["source_tie_up"], [[1], [2], []])
+        code, body, _ = self.request("POST", "/api/solve", payload)
+        self.assertEqual(code, 202)
+        job = json.loads(body)
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
+            _, body, _ = self.request("GET", f'/api/jobs/{job["job_id"]}')
+            result = json.loads(body)
+            if result["state"] != "running":
+                break
+            time.sleep(.02)
+        self.assertEqual(result["state"], "complete")
+        self.assertEqual([row["raises"] for row in result["result"]["tie_up"]], [[1], [2], []])
+        self.assertEqual(result["result"]["declared_fixed_tie_up"], payload["fixed_tie_up"])
+        self.assertEqual(self.request("POST", "/api/export", job | {"digest": "0"*64})[0], 409)
+        code, body, _ = self.request("POST", "/api/export", job)
+        self.assertEqual(code, 200)
+        with zipfile.ZipFile(io.BytesIO(body)) as archive:
+            after = import_wif(archive.read("adapted.wif").decode())
+            self.assertEqual(after.sections["TIEUP"], {"1": "1", "2": "2", "3": "0"})
+        code, body, _ = self.request("POST", "/api/solve", payload | {"fixed_tie_up": [[1], None, None]})
+        self.assertEqual(code, 202)
+        newer = json.loads(body)
+        self.assertNotEqual(newer["digest"], job["digest"])
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
+            _, body, _ = self.request("GET", f'/api/jobs/{newer["job_id"]}')
+            if json.loads(body)["state"] != "running":
+                break
+            time.sleep(.02)
+        self.assertEqual(self.request("POST", "/api/export", job)[0], 409)
+        self.request("POST", "/api/cancel", {"job_id": newer["job_id"]})
 
     def test_actual_async_current_result_zip_and_cancel_refusal(self):
         payload = example()

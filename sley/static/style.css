@@ -806,3 +806,67 @@ button.busy {
     gap: 5px;
   }
 }
+
+.fixed-editor {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 18px 0 0;
+  padding: 12px 0 0;
+  min-width: 0;
+}
+.fixed-editor legend {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+}
+.fixed-selectors {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.fixed-selectors label {
+  display: grid;
+  gap: 5px;
+  font-size: 11px;
+  flex: 1;
+  min-width: 0;
+}
+.fixed-selectors select {
+  width: 100%;
+}
+.fixed-shafts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 11px;
+}
+.fixed-shafts label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.fixed-shafts input {
+  margin: 0;
+}
+.fixed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+.fixed-actions button {
+  font-size: 10px;
+  padding: 5px 7px;
+}
+.fixed-editor details {
+  font-size: 11px;
+  margin-top: 10px;
+}
+.fixed-editor summary {
+  cursor: pointer;
+}
+#fixed-summary {
+  padding-left: 18px;
+  line-height: 1.7;
+}

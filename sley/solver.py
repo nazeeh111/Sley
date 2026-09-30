@@ -1,6 +1,7 @@
 """Original finite rising-shed tie-up search with physical pair constraints.
 
-Private mechanism probe. No WIF import, hardware control, or fitness claim.
+One pedal or an allowed pair raises the union of its assigned shafts.
+Fixed assignments are exact constraints, not physical suitability claims.
 """
 import argparse
 import csv
@@ -47,9 +48,17 @@ def shaft_set(value, shafts, name):
     return sum(1 << (v - 1) for v in numbers)
 
 
+def fixed_assignments(value, count, shafts):
+    """Normalize exact assignments; null is free and an empty list is fixed untied."""
+    if type(value) is not list or len(value) != count:
+        raise ValueError("fixed_tie_up must have one assignment per physical pedal")
+    return [None if row is None else numbers(shaft_set(row, shafts, "fixed pedal shafts"))
+            for row in value]
+
+
 def validate(project):
     keys = {"model", "shafts", "threading", "slots", "allowed_pairs", "liftplan"}
-    if type(project) is not dict or set(project) != keys:
+    if type(project) is not dict or set(project) not in (keys, keys | {"fixed_tie_up"}):
         raise ValueError("project must contain exactly model, shafts, threading, slots, allowed_pairs, liftplan")
     if project["model"] != "rising_shed_union":
         raise ValueError("only explicit rising_shed_union semantics are supported")
@@ -85,6 +94,7 @@ def validate(project):
     if type(lifts) is not list or not 1 <= len(lifts) <= 128:
         raise ValueError("liftplan must contain 1 to 128 picks")
     masks = [shaft_set(v, shafts, "liftplan row") for v in lifts]
+    fixed_assignments(project.get("fixed_tie_up", [None] * len(slots)), len(slots), shafts)
     return masks, tuple(sorted(normalized))
 
 
@@ -107,6 +117,9 @@ def actions(state, target, pairs):
 
 def solve(project, *, work_limit=500_000, seconds=5):
     masks, pairs = validate(project)
+    fixed = fixed_assignments(project.get("fixed_tie_up", [None] * len(project["slots"])),
+                              len(project["slots"]), project["shafts"])
+    initial = tuple(None if row is None else sum(1 << (v - 1) for v in row) for row in fixed)
     meter = Meter(work_limit, seconds)
     target_masks = sorted(set(masks) - {0})
     candidates = set(target_masks)
@@ -115,9 +128,9 @@ def solve(project, *, work_limit=500_000, seconds=5):
     failed = set()
     try:
         # Closing under intersections is complete for this union model: enlarge
-        # each used effect to the intersection of all lifts using that pedal.
-        # Every old effect is contained in its replacement; each replacement
-        # stays inside every lift using it. Actions and physical pairs stay fixed.
+        # each used FREE effect to the intersection of lifts using that pedal.
+        # Fixed columns stay unchanged. Every free replacement contains its old
+        # effect and stays inside each lift using it, retaining exact unions.
         pending = list(target_masks)
         while pending:
             a = pending.pop()
@@ -127,8 +140,11 @@ def solve(project, *, work_limit=500_000, seconds=5):
                 if intersection and intersection not in candidates:
                     candidates.add(intersection)
                     pending.append(intersection)
+        # Locked effects may be outside the intersection family. They must
+        # still be available as union operands; locked columns never change.
+        operands = candidates | {v for v in initial if v is not None}
         for target in target_masks:
-            subset = sorted(c for c in candidates if c & target == c)
+            subset = sorted(c for c in operands if c & target == c)
             unions = []
             for index, a in enumerate(subset):
                 for b in subset[index:]:
@@ -149,7 +165,8 @@ def solve(project, *, work_limit=500_000, seconds=5):
                 for a, b in candidate_pairs[target]:
                     for x, y in ((a, b), (b, a)) if a != b else ((a, b),):
                         meter.charge()
-                        if (state[i] is None or state[i] == x) and (state[j] is None or state[j] == y):
+                        if ((state[i] == x or (state[i] is None and x in candidates)) and
+                                (state[j] == y or (state[j] is None and y in candidates))):
                             updated = list(state)
                             updated[i], updated[j] = x, y
                             options.add(tuple(updated))
@@ -184,7 +201,7 @@ def solve(project, *, work_limit=500_000, seconds=5):
             failed.add(state)
             return None
 
-        found = search((None,) * len(project["slots"]))
+        found = search(initial)
         status = "feasible" if found is not None else "infeasible"
     except LimitReached:
         found, status = None, "unknown"
@@ -193,7 +210,7 @@ def solve(project, *, work_limit=500_000, seconds=5):
               "unique_lifts": len(set(masks)), "candidate_effects": len(candidates),
               "search_states": state_count,
               "optimality": "not requested; fixed physical slot count",
-              "semantics": "rising_shed_union"}
+              "semantics": "rising_shed_union", "declared_fixed_tie_up": fixed}
     if status != "feasible":
         return report
     state = tuple(0 if v is None else v for v in found)

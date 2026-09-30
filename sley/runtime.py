@@ -109,7 +109,7 @@ class Calculator:
                 raise ValueError("Export requires the current completed feasible result")
             self.exporting = True
             try:
-                witness = {k: job["result"][k] for k in ("status", "declared_allowed_pairs", "tie_up", "picks")}
+                witness = {k: job["result"][k] for k in ("status", "declared_allowed_pairs", "declared_fixed_tie_up", "tie_up", "picks")}
                 child, payload = self._spawn({"operation": "export", "payload": job["payload"], "result": witness})
             except OSError:
                 self.exporting = False

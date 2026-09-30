@@ -33,7 +33,7 @@ class EngineTests(unittest.TestCase):
 
     def test_project_roundtrip_and_duplicate_version_rejection(self):
         project = {"format": "sley-project", "version": 1, **example()}
-        self.assertEqual(validate_project(json.dumps(project)), project)
+        self.assertEqual(validate_project(json.dumps(project)), project | {"version": 2, "fixed_tie_up": [None] * 8})
         raw = json.dumps(project).replace('"version": 1', '"version": 1, "version": 1')
         with self.assertRaisesRegex(ValueError, "duplicate"):
             validate_project(raw)
@@ -64,7 +64,7 @@ class EngineTests(unittest.TestCase):
         envelope = json.dumps({"project": raw_project}).encode()
         self.assertLess(len(envelope), MAX_BODY)
         decoded = parse_json(envelope)
-        self.assertEqual(validate_project(decoded["project"]), project)
+        self.assertEqual(validate_project(decoded["project"]), project | {"version": 2, "fixed_tie_up": [None] * 8})
         with zipfile.ZipFile(io.BytesIO(export_bundle(request, solve_request(request)))) as archive:
             output = archive.read("adapted.wif").decode()
         self.assertLessEqual(len(output.encode()), 1024 * 1024)
@@ -89,7 +89,7 @@ class EngineTests(unittest.TestCase):
         envelope = json.dumps({"project": raw}).encode()
         self.assertLess(len(envelope), MAX_BODY)
         self.assertGreater(len(envelope), 8 * 1024 * 1024)
-        self.assertEqual(validate_project(parse_json(envelope)["project"]), project)
+        self.assertEqual(validate_project(parse_json(envelope)["project"]), project | {"version": 2, "fixed_tie_up": [None] * 8})
         with self.assertRaisesRegex(ValueError, "7 MiB"):
             validate_project(raw + " ")
 

@@ -74,7 +74,7 @@ def main():
         assert code == 200 and json.loads(data) == example()
         project = {"format": "sley-project", "version": 1, **example()}
         code, data = request("POST", "/api/project", {"project": json.dumps(project)})
-        assert code == 200 and json.loads(data)["project"] == project
+        assert code == 200 and json.loads(data)["project"] == project | {"version": 2, "fixed_tie_up": [None] * 8}
         code, data = request("POST", "/api/import", {"wif": example()["wif"]})
         assert code == 200 and json.loads(data)["ends"] == 64
         code,data=request("POST","/api/solve",example());assert code==202
@@ -92,6 +92,7 @@ def main():
             assert set(archive.namelist())=={'adapted.wif','actions.csv','tie-up.html'}
             source=import_wif(example()['wif']);after=import_wif(archive.read('adapted.wif').decode())
             assert source.liftplan==after.liftplan and source.threading==after.threading
+            assert after.sections["WIF"]["SOURCE VERSION"] == sley.__version__
             for name, block in source.blocks.items():
                 if name not in {"WIF", "CONTENTS", "WEAVING", "TIEUP", "TREADLING", "LIFTPLAN"}:
                     assert after.blocks[name].rstrip("\n") == block.rstrip("\n"), name
@@ -116,8 +117,34 @@ def main():
             ]
         request("POST","/api/cancel",{"job_id":job['job_id']})
         assert request("POST","/api/export",job)[0]==409
+        fixed = json.loads((installed_path.parent / "examples" / "fixed-pedals.sley.json").read_text())
+        code, data = request("POST", "/api/project", {"project": json.dumps(fixed)})
+        assert code == 200 and json.loads(data)["project"] == fixed
+        assert request("POST", "/api/project", {"project": json.dumps(fixed | {"slot_count": None})})[0] == 400
+        code, data = request("POST", "/api/import", {"wif": fixed["wif"]})
+        assert code == 200 and json.loads(data)["source_tie_up"] == [[1], [2], []]
+        code, data = request("POST", "/api/solve", {k: v for k, v in fixed.items() if k not in {"format", "version"}})
+        assert code == 202
+        job = json.loads(data)
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
+            code, data = request("GET", f'/api/jobs/{job["job_id"]}')
+            result = json.loads(data)
+            if result["state"] != "running":
+                break
+            time.sleep(.02)
+        assert result["state"] == "complete" and result["result"]["status"] == "feasible"
+        assert result["result"]["declared_fixed_tie_up"] == [[1], None, []]
+        code, data = request("POST", "/api/export", job)
+        assert code == 200
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            after = import_wif(archive.read("adapted.wif").decode())
+            assert after.sections["TIEUP"] == {"1": "1", "2": "2", "3": "0"}
+            assert after.liftplan == [[1], [2], [1, 2], []]
+            actions = list(csv.DictReader(io.StringIO(archive.read("actions.csv").decode())))
+            assert [row["physical_slots"] for row in actions] == ["1", "2", "1 2", ""]
         print(f"Installed package: {installed_path}")
-        print("Installed Sley launcher/assets, project reopen, source import, worker solve, physical ZIP agreement and refusal checks passed")
+        print("Installed Sley launcher/assets, v1/v2 reopen, fixed/free import, worker solve, physical ZIP agreement and refusal checks passed")
     finally:
         server.calculator.close();server.shutdown();server.server_close();thread.join(timeout=3)
 
