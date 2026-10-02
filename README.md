@@ -23,7 +23,7 @@ python -m sley
 Or install the release wheel, then launch:
 
 ```sh
-python -m pip install ./sley-0.2.1-py3-none-any.whl
+python -m pip install ./sley-0.2.2-py3-none-any.whl
 sley
 ```
 
