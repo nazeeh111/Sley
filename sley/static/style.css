@@ -368,6 +368,12 @@ main {
   align-items: start;
   gap: 12px;
 }
+.draft-heading > div:first-child {
+  min-width: 0;
+}
+#draft-title {
+  overflow-wrap: anywhere;
+}
 .draft-meta {
   font-size: 11px;
   color: var(--muted);
