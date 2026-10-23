@@ -86,6 +86,36 @@ h3 {
 a {
   color: inherit;
 }
+.start-guide {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px 40px;
+  padding: 2px 0 20px;
+}
+.start-guide h1 {
+  font-size: clamp(21px, 2.4vw, 29px);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+.start-guide p {
+  font-size: 12px;
+  color: #506174;
+  line-height: 1.65;
+  margin-top: 8px;
+  max-width: 510px;
+}
+.start-guide .start-route {
+  max-width: 310px;
+  margin-top: 0;
+}
+.start-route a {
+  color: #185a9f;
+  text-underline-offset: 3px;
+}
+#constraints-title {
+  scroll-margin-top: 20px;
+}
 .app-header {
   height: 64px;
   background: #172431;
@@ -702,6 +732,14 @@ button.busy {
   }
 }
 @media (max-width: 600px) {
+  .start-guide {
+    display: block;
+    padding-bottom: 17px;
+  }
+  .start-guide .start-route {
+    max-width: none;
+    margin-top: 10px;
+  }
   .app-header {
     height: 56px;
     padding: 0 16px;
