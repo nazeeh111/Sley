@@ -160,7 +160,7 @@ def import_wif(text):
             raise ValueError("provide either liftplan or both tie-up and treadling")
         tie_up = rows(sections["TIEUP"], treadles, shafts, "TIEUP")
         treadling = rows(sections["TREADLING"], picks, treadles, "TREADLING")
-        liftplan = [sorted(set().union(*(set(tie_up[t - 1]) for t in action))) for action in treadling]
+        liftplan = [sorted({shaft for t in action for shaft in tie_up[t - 1]}) for action in treadling]
         mode = "tieup_treadling"
     if not any(liftplan):
         raise ValueError("at least one nonempty lift is required by this export profile")
