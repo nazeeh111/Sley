@@ -42,7 +42,7 @@ class Calculator:
         except subprocess.TimeoutExpired:
             child.kill()
             child.communicate()
-            raise ValueError("Calculation exceeded the 15-second process deadline")
+            raise ValueError(f"Calculation exceeded the {self.deadline:g}-second process deadline")
         if child.returncode or len(output) > 8 * 1024 * 1024:
             raise ValueError("Calculation process could not complete")
         result = json.loads(output)

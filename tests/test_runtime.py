@@ -49,6 +49,8 @@ class RuntimeTests(unittest.TestCase):
                     self.assertEqual(calculator.cancel(started["job_id"])["state"], "cancelled")
                 status = completed(calculator, started["job_id"])
                 self.assertEqual(status["state"], "cancelled" if cancel else "failed")
+                if not cancel:
+                    self.assertEqual(status["error"], "Calculation exceeded the 0.15-second process deadline")
                 calculator.monitor.join(timeout=2)
                 self.assertIsNotNone(child.poll())
                 self.assertIsNone(calculator.active)
