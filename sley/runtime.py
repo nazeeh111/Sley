@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import threading
 import uuid
 
@@ -26,13 +27,18 @@ class Calculator:
         self.monitor = None
 
     def _spawn(self, request):
-        child = subprocess.Popen(self.command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # A worker that never reads a pipe can block communicate's input write
+        # before its timeout is checked. A file keeps the process deadline bounded.
+        with tempfile.TemporaryFile() as source:
+            source.write(json.dumps(request, separators=(",", ":"), ensure_ascii=False).encode())
+            source.seek(0)
+            child = subprocess.Popen(self.command, stdin=source, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.active = child
-        return child, json.dumps(request, separators=(",", ":"), ensure_ascii=False).encode()
+        return child
 
-    def _communicate(self, child, payload):
+    def _communicate(self, child):
         try:
-            output, _ = child.communicate(payload, timeout=self.deadline)
+            output, _ = child.communicate(timeout=self.deadline)
         except subprocess.TimeoutExpired:
             child.kill()
             child.communicate()
@@ -52,11 +58,11 @@ class Calculator:
             if self.active is not None or self.exporting:
                 raise Busy("A calculation is already running")
             job = {"job_id": uuid.uuid4().hex, "digest": digest, "state": "running", "payload": payload}
-            child, raw = self._spawn({"operation": "solve", "payload": payload})
+            child = self._spawn({"operation": "solve", "payload": payload})
             self.job = job
             def monitor():
                 try:
-                    result = self._communicate(child, raw)
+                    result = self._communicate(child)
                     with self.lock:
                         if job["state"] == "running":
                             if self.active is child:
@@ -110,12 +116,12 @@ class Calculator:
             self.exporting = True
             try:
                 witness = {k: job["result"][k] for k in ("status", "declared_allowed_pairs", "declared_fixed_tie_up", "tie_up", "picks")}
-                child, payload = self._spawn({"operation": "export", "payload": job["payload"], "result": witness})
+                child = self._spawn({"operation": "export", "payload": job["payload"], "result": witness})
             except OSError:
                 self.exporting = False
                 raise
         try:
-            result = self._communicate(child, payload)
+            result = self._communicate(child)
             with self.lock:
                 if job["state"] == "cancelled":
                     raise ValueError("Export was cancelled")
