@@ -58,6 +58,6 @@ python -m unittest discover -s tests -v
 node --test sley/static/model.test.mjs
 ```
 
-Tests exercise original-index expansion, 4,096×4,096 drafts, a changed final pick, sparse late ends, bounded raw project JSON, physical gaps, refusal paths, worker cleanup and actual local HTTP export. The original finite solver was checked against independent exhaustive small-case enumeration. Existing [dtx_to_wif 4.7.1](https://github.com/r-owen/dtx_to_wif) readbacks matched the larger adapted draft's lifts, threading, colors, notes and physical actions. This reader is used for development verification only.
+Tests exercise original-index expansion, 4,096×4,096 drafts, a changed final pick, sparse late ends, bounded raw project JSON, physical gaps, refusal paths, worker cleanup and actual local HTTP export. The original finite solver was checked against independent exhaustive small-case enumeration. Independent [existing-reader readbacks](tools/existing_reader.py) matched the larger adapted draft's lifts, threading, colors, notes and physical actions. This reader is used for development verification only.
 
-Sley uses intersection-based set-basis search, an established approach also described by [Tim's Treadle Reducer](https://www.cs.earlham.edu/~timm/treadle/). This implementation adds declared pair constraints and exact fixed assignments on physical slots. MIT license.
+[MIT license](LICENSE).
