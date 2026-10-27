@@ -37,11 +37,27 @@ class Calculator:
         return child
 
     def _communicate(self, child):
+        timed_out = threading.Event()
+        def expire():
+            if child.poll() is None:
+                timed_out.set()
+                child.kill()
+        # Termination also runs outside the I/O thread, preserving the watchdog
+        # even though normal workers now read their request from a temporary file.
+        watchdog = threading.Timer(self.deadline, expire)
+        watchdog.daemon = True
+        watchdog.start()
         try:
-            output, _ = child.communicate(timeout=self.deadline)
-        except subprocess.TimeoutExpired:
-            child.kill()
-            child.communicate()
+            try:
+                output, _ = child.communicate(timeout=self.deadline)
+            except subprocess.TimeoutExpired:
+                timed_out.set()
+                child.kill()
+                child.communicate()
+        finally:
+            watchdog.cancel()
+            watchdog.join()
+        if timed_out.is_set():
             raise ValueError(f"Calculation exceeded the {self.deadline:g}-second process deadline")
         if child.returncode or len(output) > 8 * 1024 * 1024:
             raise ValueError("Calculation process could not complete")

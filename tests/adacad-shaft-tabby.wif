@@ -1,0 +1,58 @@
+[WIF]
+Version=1.1
+Date=June 11, 2024
+Developers=unstabledesignlab@gmail.com
+Source Program=AdaCAD
+Source Version=5.1.5
+[CONTENTS]
+COLOR PALETTE=true
+WEAVING=true
+WARP=true
+WEFT=true
+TIEUP=true
+COLOR TABLE=true
+THREADING=true
+WARP COLORS=true
+TREADLING=true
+WEFT COLORS=true
+[COLOR PALETTE]
+Entries=11
+Form=RGB
+Range=0,255
+[WEAVING]
+Shafts=2
+Treadles=2
+Rising Shed=yes
+[WARP]
+Threads=2
+Colors=1
+[WEFT]
+Threads=2
+Colors=1
+[TIEUP]
+1=1
+2=2
+[COLOR TABLE]
+1=51,51,51
+2=249,248,243
+3=213,94,0
+4=230,159,0
+5=240,228,66
+6=74,255,74
+7=0,158,115
+8=0,114,178
+9=86,180,233
+10=204,121,167
+11=170,170,170
+[THREADING]
+2=1
+1=2
+[WARP COLORS]
+1=1
+2=1
+[TREADLING]
+1=1
+2=2
+[WEFT COLORS]
+1=2
+2=2

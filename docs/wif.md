@@ -12,4 +12,8 @@ Input limits: 1 MiB UTF-8 WIF, 32,768 lines, 2,048 characters per line, 4,096 en
 
 THREADING, TEXT, NOTES, palettes, colors and independent appearance blocks are retained. Unknown private sections cannot be classified safely and are refused. Existing spacing, thickness and symbols are preserved without a fabric-suitability or comprehensive appearance-validation claim. Header source-program/version fields identify Sley. Output replaces the active controls with exactly one physical-ID tie-up/treadling path and updates CONTENTS. Empty positions remain declared and untied. Export reparses its own complete WIF and checks original threading/lifts and preserved independent blocks before a ZIP is built.
 
+The obsolete `Colors` field in WARP and WEFT is preserved unchanged as legacy metadata. The singular `Color` default, palette and per-thread colors retain their existing validation.
+
+The unchanged test fixture comes from AdaCAD 5.1.5’s `tabby(1,1,1,1)` operation, exported in **Shaft/Treadle Loom** mode. Its Jacquard export is outside this profile. After adaptation, dtx_to_wif 4.7.1 matched the threading, lifts, colors and physical pedal IDs. AdaCAD’s return import failed in its upload flow, so that direction remains unverified. This small synthetic check does not establish compatibility with every AdaCAD draft or loom.
+
 The annotated [Bower WIF reference](https://asunder.co/app/bower/articles/wif-file-specification) and actual [dtx_to_wif](https://github.com/r-owen/dtx_to_wif) readback informed this profile. Bower implementation notes are not a normative specification. The original normative reference was unavailable during this implementation, so Sley does not claim full WIF 1.1 compliance or compatibility with every reader.
