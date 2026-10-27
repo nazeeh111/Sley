@@ -139,7 +139,8 @@ def import_wif(text):
         picks = scalar(sections["WEFT"]["THREADS"], 1, 4096, "Weft Threads")
     except KeyError as error:
         raise ValueError(f"missing explicit structure key: {error.args[0]}") from error
-    warp_keys = {"THREADS", "COLOR", "SYMBOL NUMBER", "SYMBOL NUMBER ZOOM", "UNITS", "SPACING",
+    # Preserve legacy Colors metadata without using it as a Color default.
+    warp_keys = {"THREADS", "COLOR", "COLORS", "SYMBOL NUMBER", "SYMBOL NUMBER ZOOM", "UNITS", "SPACING",
                  "SPACING ZOOM", "THICKNESS", "THICKNESS ZOOM"}
     for name in ("WARP", "WEFT"):
         if set(sections[name]) - warp_keys:

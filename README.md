@@ -6,7 +6,7 @@ Adapt a weaving draft to your physical pedals and allowed pairs.
 
 Open a supported WIF (Weaving Information File), choose which pedals may be pressed together, and inspect the resulting tie-up and pressing sequence. Sley preserves the draft's threading, lifts, colors and independent metadata.
 
-[Run locally](#run-locally) · [Download v0.2.2](https://github.com/nazeeh111/Sley/releases/tag/v0.2.2) · [Supported WIF profile](docs/wif.md)
+[Run locally](#run-locally) · [Download v0.2.3](https://github.com/nazeeh111/Sley/releases/tag/v0.2.3) · [Supported WIF profile](docs/wif.md)
 
 ![A checked eight-shaft draft showing selected pick 1, physical pedals 4 and 8, and the preserved adapted drawdown](docs/workflow.jpg)
 
@@ -20,10 +20,10 @@ From a source checkout:
 python -m sley
 ```
 
-Or download `sley-0.2.2-py3-none-any.whl` from the [v0.2.2 release](https://github.com/nazeeh111/Sley/releases/tag/v0.2.2). In the folder where you saved it, install the wheel and launch:
+Or download `sley-0.2.3-py3-none-any.whl` from the [v0.2.3 release](https://github.com/nazeeh111/Sley/releases/tag/v0.2.3). In the folder where you saved it, install the wheel and launch:
 
 ```sh
-python -m pip install ./sley-0.2.2-py3-none-any.whl
+python -m pip install ./sley-0.2.3-py3-none-any.whl
 sley
 ```
 
@@ -31,7 +31,7 @@ The launcher opens a loopback URL. Use `sley --no-browser` to print it, or `sley
 
 ## Use a draft
 
-1. Open a WIF or use the bundled eight-shaft example.
+1. Open a WIF or use the bundled eight-shaft example. For the checked AdaCAD 5.1.5 import, use Shaft/Treadle Loom mode; see the [profile notes](docs/wif.md).
 2. Set the physical pedal count and edit allowed pairs. All-pairs, single-pedal and two-bank presets are editable constraints.
 3. Keep selected pedals fixed to exact shaft sets, or choose **Keep untied**. Leave spare pedals **Free** for the solver. **Copy input pedal tie-up** copies only the selected source pedal; it does not assume the input describes your current hardware.
 4. Find a plan. Inspect its drawdown, physical tie-up and selected pick. Cancel a running search if needed.

@@ -1,4 +1,5 @@
 import io
+import os
 import sys
 import time
 import unittest
@@ -19,6 +20,64 @@ def completed(calculator, identity, timeout=10):
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_deadline_and_cancel_interrupt_blocked_stdin(self):
+        class BlockedInputCalculator(Calculator):
+            def _spawn(self, request):
+                child, payload = super()._spawn(request)
+                communicate = child.communicate
+                def blocked_input(input=None, timeout=None):
+                    if input is not None:
+                        # Reproduce the observed non-interruptible pipe write
+                        # without depending on a platform's selector behavior.
+                        try:
+                            os.write(child.stdin.fileno(), b"x" * (2 * 1024 * 1024))
+                        except BrokenPipeError:
+                            pass
+                    return communicate()
+                child.communicate = blocked_input
+                return child, payload
+
+        for cancel in (False, True):
+            with self.subTest(cancel=cancel):
+                calculator = BlockedInputCalculator(
+                    deadline=0.15, command=[sys.executable, "-c", "import time;time.sleep(3)"])
+                try:
+                    started_at = time.monotonic()
+                    started = calculator.start(example())
+                    child = calculator.active
+                    if cancel:
+                        calculator.cancel(started["job_id"])
+                    status = completed(calculator, started["job_id"], timeout=2)
+                    self.assertEqual(status["state"], "cancelled" if cancel else "failed")
+                    if not cancel:
+                        self.assertIn("process deadline", status["error"])
+                    calculator.monitor.join(timeout=1)
+                    self.assertFalse(calculator.monitor.is_alive())
+                    self.assertIsNotNone(child.poll())
+                    self.assertIsNone(calculator.active)
+                    self.assertLess(time.monotonic() - started_at, 2)
+                finally:
+                    calculator.close()
+
+    def test_large_valid_input_and_process_error(self):
+        payload = example()
+        payload["wif"] = (";" + "\\" * 1000 + "\n") * 400 + payload["wif"]
+        calculator = Calculator()
+        try:
+            started = calculator.start(payload)
+            self.assertEqual(completed(calculator, started["job_id"])["state"], "complete")
+            with zipfile.ZipFile(io.BytesIO(calculator.export(started["job_id"], started["digest"]))) as archive:
+                self.assertIn("adapted.wif", archive.namelist())
+            calculator.command = [sys.executable, "-c", "raise SystemExit(7)"]
+            failed = calculator.start(example())
+            status = completed(calculator, failed["job_id"])
+            self.assertEqual(status["state"], "failed")
+            self.assertIn("could not complete", status["error"])
+            with self.assertRaises(ValueError):
+                calculator.export(failed["job_id"], failed["digest"])
+        finally:
+            calculator.close()
+
     def test_real_worker_complete_export_and_digest_refusal(self):
         calculator = Calculator()
         try:

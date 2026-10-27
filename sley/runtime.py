@@ -31,12 +31,28 @@ class Calculator:
         return child, json.dumps(request, separators=(",", ":"), ensure_ascii=False).encode()
 
     def _communicate(self, child, payload):
+        timed_out = threading.Event()
+        def expire():
+            if child.poll() is None:
+                timed_out.set()
+                child.kill()
+        # communicate's timeout cannot interrupt a blocking stdin write on every
+        # platform. Termination must also be able to run outside its I/O thread.
+        watchdog = threading.Timer(self.deadline, expire)
+        watchdog.daemon = True
+        watchdog.start()
         try:
-            output, _ = child.communicate(payload, timeout=self.deadline)
-        except subprocess.TimeoutExpired:
-            child.kill()
-            child.communicate()
-            raise ValueError("Calculation exceeded the 15-second process deadline")
+            try:
+                output, _ = child.communicate(payload, timeout=self.deadline)
+            except subprocess.TimeoutExpired:
+                timed_out.set()
+                child.kill()
+                child.communicate()
+        finally:
+            watchdog.cancel()
+            watchdog.join()
+        if timed_out.is_set():
+            raise ValueError("Calculation exceeded the process deadline")
         if child.returncode or len(output) > 8 * 1024 * 1024:
             raise ValueError("Calculation process could not complete")
         result = json.loads(output)
