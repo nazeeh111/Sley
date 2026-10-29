@@ -6,7 +6,7 @@ Adapt a weaving draft to your physical pedals and allowed pairs.
 
 Open a supported WIF (Weaving Information File), choose which pedals may be pressed together, and inspect the resulting tie-up and pressing sequence. Sley preserves the draft's threading, lifts, colors and independent metadata.
 
-[Run locally](#run-locally) · [Download v0.2.3](https://github.com/nazeeh111/Sley/releases/tag/v0.2.3) · [Supported WIF profile](docs/wif.md)
+[Run locally](#run-locally) · [Download v0.2.4](https://github.com/nazeeh111/Sley/releases/tag/v0.2.4) · [Supported WIF profile](docs/wif.md)
 
 ![A checked eight-shaft draft showing selected pick 1, physical pedals 4 and 8, and the preserved adapted drawdown](docs/workflow.jpg)
 
@@ -20,10 +20,10 @@ From a source checkout:
 python -m sley
 ```
 
-Or download `sley-0.2.3-py3-none-any.whl` from the [v0.2.3 release](https://github.com/nazeeh111/Sley/releases/tag/v0.2.3). In the folder where you saved it, install the wheel and launch:
+Or download `sley-0.2.4-py3-none-any.whl` from the [v0.2.4 release](https://github.com/nazeeh111/Sley/releases/tag/v0.2.4). In the folder where you saved it, install the wheel and launch:
 
 ```sh
-python -m pip install ./sley-0.2.3-py3-none-any.whl
+python -m pip install ./sley-0.2.4-py3-none-any.whl
 sley
 ```
 
