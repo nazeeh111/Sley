@@ -1,5 +1,6 @@
 import io
 import os
+import subprocess
 import sys
 import time
 import unittest
@@ -23,10 +24,14 @@ class RuntimeTests(unittest.TestCase):
     def test_deadline_and_cancel_interrupt_blocked_stdin(self):
         class BlockedInputCalculator(Calculator):
             def _spawn(self, request):
-                child, payload = super()._spawn(request)
+                # Normal workers use file-backed stdin. Deliberately force a
+                # pipe here so this regression still tests blocked I/O itself.
+                child = subprocess.Popen(self.command, stdin=subprocess.PIPE,
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.active = child
                 communicate = child.communicate
                 def blocked_input(input=None, timeout=None):
-                    if input is not None:
+                    if child.stdin is not None and not child.stdin.closed:
                         # Reproduce the observed non-interruptible pipe write
                         # without depending on a platform's selector behavior.
                         try:
@@ -35,7 +40,7 @@ class RuntimeTests(unittest.TestCase):
                             pass
                     return communicate()
                 child.communicate = blocked_input
-                return child, payload
+                return child
 
         for cancel in (False, True):
             with self.subTest(cancel=cancel):
@@ -108,6 +113,8 @@ class RuntimeTests(unittest.TestCase):
                     self.assertEqual(calculator.cancel(started["job_id"])["state"], "cancelled")
                 status = completed(calculator, started["job_id"])
                 self.assertEqual(status["state"], "cancelled" if cancel else "failed")
+                if not cancel:
+                    self.assertEqual(status["error"], "Calculation exceeded the 0.15-second process deadline")
                 calculator.monitor.join(timeout=2)
                 self.assertIsNotNone(child.poll())
                 self.assertIsNone(calculator.active)

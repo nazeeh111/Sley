@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import threading
 import uuid
 
@@ -26,24 +27,29 @@ class Calculator:
         self.monitor = None
 
     def _spawn(self, request):
-        child = subprocess.Popen(self.command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # A worker that never reads a pipe can block communicate's input write
+        # before its timeout is checked. A file keeps the process deadline bounded.
+        with tempfile.TemporaryFile() as source:
+            source.write(json.dumps(request, separators=(",", ":"), ensure_ascii=False).encode())
+            source.seek(0)
+            child = subprocess.Popen(self.command, stdin=source, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.active = child
-        return child, json.dumps(request, separators=(",", ":"), ensure_ascii=False).encode()
+        return child
 
-    def _communicate(self, child, payload):
+    def _communicate(self, child):
         timed_out = threading.Event()
         def expire():
             if child.poll() is None:
                 timed_out.set()
                 child.kill()
-        # communicate's timeout cannot interrupt a blocking stdin write on every
-        # platform. Termination must also be able to run outside its I/O thread.
+        # Termination also runs outside the I/O thread, preserving the watchdog
+        # even though normal workers now read their request from a temporary file.
         watchdog = threading.Timer(self.deadline, expire)
         watchdog.daemon = True
         watchdog.start()
         try:
             try:
-                output, _ = child.communicate(payload, timeout=self.deadline)
+                output, _ = child.communicate(timeout=self.deadline)
             except subprocess.TimeoutExpired:
                 timed_out.set()
                 child.kill()
@@ -52,7 +58,7 @@ class Calculator:
             watchdog.cancel()
             watchdog.join()
         if timed_out.is_set():
-            raise ValueError("Calculation exceeded the process deadline")
+            raise ValueError(f"Calculation exceeded the {self.deadline:g}-second process deadline")
         if child.returncode or len(output) > 8 * 1024 * 1024:
             raise ValueError("Calculation process could not complete")
         result = json.loads(output)
@@ -68,11 +74,11 @@ class Calculator:
             if self.active is not None or self.exporting:
                 raise Busy("A calculation is already running")
             job = {"job_id": uuid.uuid4().hex, "digest": digest, "state": "running", "payload": payload}
-            child, raw = self._spawn({"operation": "solve", "payload": payload})
+            child = self._spawn({"operation": "solve", "payload": payload})
             self.job = job
             def monitor():
                 try:
-                    result = self._communicate(child, raw)
+                    result = self._communicate(child)
                     with self.lock:
                         if job["state"] == "running":
                             if self.active is child:
@@ -126,12 +132,12 @@ class Calculator:
             self.exporting = True
             try:
                 witness = {k: job["result"][k] for k in ("status", "declared_allowed_pairs", "declared_fixed_tie_up", "tie_up", "picks")}
-                child, payload = self._spawn({"operation": "export", "payload": job["payload"], "result": witness})
+                child = self._spawn({"operation": "export", "payload": job["payload"], "result": witness})
             except OSError:
                 self.exporting = False
                 raise
         try:
-            result = self._communicate(child, payload)
+            result = self._communicate(child)
             with self.lock:
                 if job["state"] == "cancelled":
                     raise ValueError("Export was cancelled")
