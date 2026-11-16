@@ -10,6 +10,8 @@ Open a supported WIF (Weaving Information File), choose which pedals may be pres
 
 ![A checked eight-shaft draft showing selected pick 1, physical pedals 4 and 8, and the preserved adapted drawdown](docs/workflow.jpg)
 
+Here the selected pick uses physical pedals 4 and 8 together. The adapted drawdown retains the requested lifts; the tie-up and pressing sequence show how to produce them.
+
 ## Run locally
 
 Python 3.12 or newer. Sley uses the Python standard library and a local browser; it makes no remote calls.
@@ -20,7 +22,7 @@ From a source checkout:
 python -m sley
 ```
 
-Or download `sley-0.2.4-py3-none-any.whl` from the [v0.2.4 release](https://github.com/nazeeh111/Sley/releases/tag/v0.2.4). In the folder where you saved it, install the wheel and launch:
+The [v0.2.4 release](https://github.com/nazeeh111/Sley/releases/tag/v0.2.4) is a historical snapshot and does not include the newer `compare` optimizer described below. To run its wheel, download `sley-0.2.4-py3-none-any.whl` and launch:
 
 ```sh
 python -m pip install ./sley-0.2.4-py3-none-any.whl
@@ -61,3 +63,44 @@ node --test sley/static/model.test.mjs
 Tests exercise original-index expansion, 4,096×4,096 drafts, a changed final pick, sparse late ends, bounded raw project JSON, physical gaps, refusal paths, worker cleanup and actual local HTTP export. The original finite solver was checked against independent exhaustive small-case enumeration. Independent [existing-reader readbacks](tools/existing_reader.py) matched the larger adapted draft's lifts, threading, colors, notes and physical actions. This reader is used for development verification only.
 
 [MIT license](LICENSE).
+
+### Compare a change-aware plan from the command line
+
+The optional CLI optimizer minimizes **shaft-pedal connection additions/removals**
+from your explicitly declared existing tie-up, then minimizes paired pressing
+occurrences across every source pick, including repeats. These are declared
+planning costs, not ergonomic or physical suitability claims. Pedal positions and
+exact fixed assignments remain unchanged. The browser continues to find the first
+feasible plan.
+
+Save constraints as JSON, for example:
+
+```json
+{"slot_count":3,"allowed_pairs":[[1,2],[1,3],[2,3]],
+ "existing_tie_up":[[],[1,2,3],[]],"fixed_tie_up":[null,null,null]}
+```
+
+```sh
+python -m sley compare draft.wif constraints.json --work-limit 500000 --seconds 5 > comparison.json
+python -m sley compare draft.wif constraints.json --choose optimized --export chosen.wif
+```
+
+From an installed current-source package, `sley compare` is equivalent to `python -m sley compare`.
+
+The report compares `initial_objective` and `objective` in that priority order,
+includes the initial tie-up and the candidate's complete pressing sequence, and
+reports `optimality: proven` only after exhaustive branch-and-bound completion.
+`--choose initial` exports the verified starting incumbent instead. An existing
+setup that already realizes all picks is the initial incumbent; otherwise the
+first feasible plan is used. Fixed columns may require changes from the existing
+setup and those changes count in the objective. Empty arrays mean untied pedals;
+all existing pedals must be declared, while null is permitted only in fixed
+assignments to mean free.
+
+Search covers every shaft subset in every free physical slot. Larger problems
+can exceed the work/time budget. A verified incumbent remains usable with
+`optimality: not proven; budget exhausted`; `unknown` means no incumbent was found,
+and never means infeasible. The report's lower bound `[mandatory fixed edits, 0]`
+is deliberately conservative. Existing output files are never overwritten.
+Exports pass the same full lift/threading reimport verification as browser plans.
+No additional dependencies, network service or supported loom family is implied.

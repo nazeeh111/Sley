@@ -1,12 +1,16 @@
 """Launch Sley's offline local weaving adapter."""
 import argparse
 import webbrowser
+import sys
 
 from .server import make_server
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Open Sley's local weaving adapter")
+    if len(sys.argv) > 1 and sys.argv[1] == "compare":
+        from .compare import main as compare
+        return compare(sys.argv[2:])
+    parser = argparse.ArgumentParser(description="Open Sley's local weaving adapter", epilog="For change-aware planning and WIF export, run: python -m sley compare --help")
     parser.add_argument("--port", type=int, default=0, help="localhost port; zero chooses a free port")
     parser.add_argument("--no-browser", action="store_true", help="print the URL without opening a browser")
     args = parser.parse_args()

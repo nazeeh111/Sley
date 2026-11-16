@@ -214,6 +214,10 @@ def solve(project, *, work_limit=500_000, seconds=5):
     if status != "feasible":
         return report
     state = tuple(0 if v is None else v for v in found)
+    return attach_plan(project, report, state, masks, pairs)
+
+
+def attach_plan(project, report, state, masks, pairs):
     mapping = {physical + 1: logical for logical, physical in enumerate(
         (i for i, v in enumerate(state) if v), 1)}
     picks = []

@@ -243,7 +243,13 @@ def adapt(document, slots, allowed_pairs, fixed_tie_up=None, **limits):
                "slots": slots, "allowed_pairs": allowed_pairs,
                "liftplan": [list(lift) for lift in unique_lifts],
                "fixed_tie_up": [None] * len(slots) if fixed_tie_up is None else fixed_tie_up}
-    result = solve(project, **limits)
+    if "existing_tie_up" in limits:
+        from .optimize import optimize
+        from collections import Counter
+        counts = Counter(tuple(lift) for lift in document.liftplan)
+        result = optimize(project, pick_weights=[counts[lift] for lift in unique_lifts], **limits)
+    else:
+        result = solve(project, **limits)
     result.pop("drawdown", None)
     result.pop("threading", None)
     result["input_mode"] = document.mode
