@@ -47,14 +47,16 @@ The launcher opens a loopback URL. Use `sley --no-browser` to print it, or `sley
 2. Set the physical pedal count and edit allowed pairs. All-pairs, single-pedal and two-bank presets are editable constraints.
 3. Keep selected pedals fixed to exact shaft sets, or choose **Keep untied**. Leave spare pedals **Free** for the solver. **Copy input pedal tie-up** copies only the selected source pedal; it does not assume the input describes your current hardware.
 4. Find a plan. Inspect its drawdown, physical tie-up and selected pick. Cancel a running search if needed.
-5. Export the current Feasible result. The ZIP contains `adapted.wif`, `actions.csv` and printable `tie-up.html`.
+5. Optionally open **Minimize changes to an existing setup**. Copy the whole input tie-up only if it describes your hardware, or declare all pedals untied and edit each connection. **Minimize changes** uses this separate starting setup while respecting fixed assignments and allowed pairs.
+6. Export the current checked result. The ZIP contains `adapted.wif`, `actions.csv` and printable `tie-up.html`.
 
-WIF treadle numbers equal physical pedal positions, including unused gaps and unused fixed pedals. Every output pick retains its original index. Save/Open project stores the original WIF and constraints in a versioned JSON document; calculated results are not saved. Version 2 records each pedal as `null` (free), `[]` (fixed untied), or an exact shaft list. Version 1 projects reopen with all pedals free. A fresh WIF import resets fixed assignments; reducing the pedal count refuses to remove any fixed pedal. Editing inputs invalidates results and export. Invalid imports retain the current draft.
+WIF treadle numbers equal physical pedal positions, including unused gaps and unused fixed pedals. Every output pick retains its original index. Save/Open project stores the original WIF and constraints in a versioned JSON document; calculated results are not saved. Version 2 records each pedal as `null` (free), `[]` (fixed untied), or an exact shaft list. Version 1 projects reopen with all pedals free. Version 3 also saves the explicitly declared existing setup for comparison, or `null` when none is declared. Versions 1 and 2 remain supported. A fresh WIF import resets fixed assignments and the comparison setup; reducing the pedal count refuses to remove any fixed pedal. Editing inputs invalidates results and export. Invalid imports retain the current draft.
 
 Try [the fixed-pedal project](sley/examples/fixed-pedals.sley.json) with **Open project**. Pedal 1 stays tied to shaft 1, pedal 3 stays untied, and the solver assigns pedal 2 to shaft 2. The four picks use pedal 1, pedal 2, the allowed pair 1+2, then no press. This self-authored example is also included in the wheel's `sley/examples` directory.
 
 ## Results and limits
 
+- **Optimal:** the change-aware search proved the minimum connection changes, then paired pick occurrences, under the declared model.
 - **Feasible:** a checked plan raises exactly the requested shafts using one pedal or one permitted pair per pick. A rest presses none.
 - **Infeasible:** the finite search exhausted all relevant assignments for these fixed physical slots.
 - **Unknown:** the work or time budget ended without a conclusion. No partial actions can export.
@@ -80,8 +82,16 @@ The optional CLI optimizer minimizes **shaft-pedal connection additions/removals
 from your explicitly declared existing tie-up, then minimizes paired pressing
 occurrences across every source pick, including repeats. These are declared
 planning costs, not ergonomic or physical suitability claims. Pedal positions and
-exact fixed assignments remain unchanged. The browser continues to find the first
-feasible plan.
+exact fixed assignments remain unchanged. The browser offers the same optimizer
+through **Minimize changes**, alongside its ordinary first-feasible **Find plan** action.
+The browser compares the first feasible incumbent with the best found result and exports
+the latter. The first feasible incumbent may differ from the declared existing setup.
+A feasible result without proof is usable, but is never labelled optimal.
+
+Open [the change-aware project](sley/examples/change-aware.sley.json) to try a small
+self-authored three-shaft example: the first feasible objective is 4 connection
+changes / 0 paired picks; the proven best is 3 / 1. This demonstrates the declared
+priority order, not an ergonomic or loom-mechanics recommendation.
 
 Save constraints as JSON, for example:
 
