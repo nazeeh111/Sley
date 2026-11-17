@@ -1,0 +1,382 @@
+[
+  {
+    "argv": [
+      "/Users/nazeeh/.local/share/portfolio-design-2026-11-17/ObjectDNA-runtime/bin/python",
+      "-B",
+      "-m",
+      "sley",
+      "compare",
+      "/Users/nazeeh/Documents/Codex/2026-11-17/portfolio-design/candidates/repositories/Sley-design/source/docs/presentation/source.wif",
+      "/Users/nazeeh/Documents/Codex/2026-11-17/portfolio-design/candidates/repositories/Sley-design/source/docs/presentation/constraints.json",
+      "--choose",
+      "initial",
+      "--export",
+      "/var/folders/ss/tml7487n205dg94kb7__tth80000gn/T/sley-cli-o3o7jpdz/initial.wif"
+    ],
+    "exit": 0,
+    "stdout": {
+      "selected": "initial",
+      "comparison": {
+        "status": "feasible",
+        "work": 7,
+        "work_limit": 500000,
+        "elapsed_seconds": 2.0958003005944192e-05,
+        "search_states": 7,
+        "unique_lifts": 4,
+        "candidate_effects": 4,
+        "semantics": "rising_shed_union",
+        "declared_fixed_tie_up": [
+          [
+            1
+          ],
+          null,
+          []
+        ],
+        "declared_existing_tie_up": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          []
+        ],
+        "optimality": "proven",
+        "objective_order": [
+          "connection_changes",
+          "paired_pick_occurrences"
+        ],
+        "objective": [
+          0,
+          1
+        ],
+        "initial_objective": [
+          0,
+          1
+        ],
+        "objective_lower_bound": [
+          0,
+          0
+        ],
+        "source_pick_occurrences": 4,
+        "initial_tie_up": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          []
+        ],
+        "tie_up": [
+          {
+            "physical_slot": 1,
+            "label": "Pedal 1",
+            "logical_treadle": 1,
+            "raises": [
+              1
+            ]
+          },
+          {
+            "physical_slot": 2,
+            "label": "Pedal 2",
+            "logical_treadle": 2,
+            "raises": [
+              2
+            ]
+          },
+          {
+            "physical_slot": 3,
+            "label": "Pedal 3",
+            "logical_treadle": null,
+            "raises": []
+          }
+        ],
+        "logical_to_physical": {
+          "1": 1,
+          "2": 2
+        },
+        "picks": [
+          {
+            "pick": 1,
+            "physical_slots": [
+              1
+            ],
+            "logical_treadles": [
+              1
+            ],
+            "raised_shafts": [
+              1
+            ]
+          },
+          {
+            "pick": 2,
+            "physical_slots": [
+              2
+            ],
+            "logical_treadles": [
+              2
+            ],
+            "raised_shafts": [
+              2
+            ]
+          },
+          {
+            "pick": 3,
+            "physical_slots": [
+              1,
+              2
+            ],
+            "logical_treadles": [
+              1,
+              2
+            ],
+            "raised_shafts": [
+              1,
+              2
+            ]
+          },
+          {
+            "pick": 4,
+            "physical_slots": [],
+            "logical_treadles": [],
+            "raised_shafts": []
+          }
+        ],
+        "preserves_all_lifts": true,
+        "input_mode": "tieup_treadling",
+        "declared_allowed_pairs": [
+          [
+            1,
+            2
+          ]
+        ],
+        "source_picks": 4,
+        "source_ends": 2,
+        "wif_to_physical": {
+          "1": 1,
+          "2": 2,
+          "3": 3
+        },
+        "wif_treadles_by_pick": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          []
+        ],
+        "drawdown_sha256": "65e3668b21c423ec010cbe9d8d7bc09cab4302f218b267a4a3630884954f8785"
+      },
+      "selected_objective": [
+        0,
+        1
+      ]
+    },
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/Users/nazeeh/.local/share/portfolio-design-2026-11-17/ObjectDNA-runtime/bin/python",
+      "-B",
+      "-m",
+      "sley",
+      "compare",
+      "/Users/nazeeh/Documents/Codex/2026-11-17/portfolio-design/candidates/repositories/Sley-design/source/docs/presentation/source.wif",
+      "/Users/nazeeh/Documents/Codex/2026-11-17/portfolio-design/candidates/repositories/Sley-design/source/docs/presentation/constraints.json",
+      "--choose",
+      "optimized",
+      "--export",
+      "/var/folders/ss/tml7487n205dg94kb7__tth80000gn/T/sley-cli-o3o7jpdz/optimized.wif"
+    ],
+    "exit": 0,
+    "stdout": {
+      "selected": "optimized",
+      "comparison": {
+        "status": "feasible",
+        "work": 7,
+        "work_limit": 500000,
+        "elapsed_seconds": 2.2083000658312812e-05,
+        "search_states": 7,
+        "unique_lifts": 4,
+        "candidate_effects": 4,
+        "semantics": "rising_shed_union",
+        "declared_fixed_tie_up": [
+          [
+            1
+          ],
+          null,
+          []
+        ],
+        "declared_existing_tie_up": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          []
+        ],
+        "optimality": "proven",
+        "objective_order": [
+          "connection_changes",
+          "paired_pick_occurrences"
+        ],
+        "objective": [
+          0,
+          1
+        ],
+        "initial_objective": [
+          0,
+          1
+        ],
+        "objective_lower_bound": [
+          0,
+          0
+        ],
+        "source_pick_occurrences": 4,
+        "initial_tie_up": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          []
+        ],
+        "tie_up": [
+          {
+            "physical_slot": 1,
+            "label": "Pedal 1",
+            "logical_treadle": 1,
+            "raises": [
+              1
+            ]
+          },
+          {
+            "physical_slot": 2,
+            "label": "Pedal 2",
+            "logical_treadle": 2,
+            "raises": [
+              2
+            ]
+          },
+          {
+            "physical_slot": 3,
+            "label": "Pedal 3",
+            "logical_treadle": null,
+            "raises": []
+          }
+        ],
+        "logical_to_physical": {
+          "1": 1,
+          "2": 2
+        },
+        "picks": [
+          {
+            "pick": 1,
+            "physical_slots": [
+              1
+            ],
+            "logical_treadles": [
+              1
+            ],
+            "raised_shafts": [
+              1
+            ]
+          },
+          {
+            "pick": 2,
+            "physical_slots": [
+              2
+            ],
+            "logical_treadles": [
+              2
+            ],
+            "raised_shafts": [
+              2
+            ]
+          },
+          {
+            "pick": 3,
+            "physical_slots": [
+              1,
+              2
+            ],
+            "logical_treadles": [
+              1,
+              2
+            ],
+            "raised_shafts": [
+              1,
+              2
+            ]
+          },
+          {
+            "pick": 4,
+            "physical_slots": [],
+            "logical_treadles": [],
+            "raised_shafts": []
+          }
+        ],
+        "preserves_all_lifts": true,
+        "input_mode": "tieup_treadling",
+        "declared_allowed_pairs": [
+          [
+            1,
+            2
+          ]
+        ],
+        "source_picks": 4,
+        "source_ends": 2,
+        "wif_to_physical": {
+          "1": 1,
+          "2": 2,
+          "3": 3
+        },
+        "wif_treadles_by_pick": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          []
+        ],
+        "drawdown_sha256": "65e3668b21c423ec010cbe9d8d7bc09cab4302f218b267a4a3630884954f8785"
+      },
+      "selected_objective": [
+        0,
+        1
+      ]
+    },
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/Users/nazeeh/.local/share/portfolio-design-2026-11-17/ObjectDNA-runtime/bin/python",
+      "-B",
+      "-m",
+      "sley",
+      "compare",
+      "/Users/nazeeh/Documents/Codex/2026-11-17/portfolio-design/candidates/repositories/Sley-design/source/docs/presentation/source.wif",
+      "/Users/nazeeh/Documents/Codex/2026-11-17/portfolio-design/candidates/repositories/Sley-design/source/docs/presentation/constraints.json",
+      "--choose",
+      "optimized",
+      "--export",
+      "/var/folders/ss/tml7487n205dg94kb7__tth80000gn/T/sley-cli-o3o7jpdz/optimized.wif"
+    ],
+    "exit": 1,
+    "stderr": "sley compare: [Errno 17] File exists: '/var/folders/ss/tml7487n205dg94kb7__tth80000gn/T/sley-cli-o3o7jpdz/.sley-5kt0k7xh.tmp' -> '/var/folders/ss/tml7487n205dg94kb7__tth80000gn/T/sley-cli-o3o7jpdz/optimized.wif'\n",
+    "existingFilePreserved": true
+  }
+]

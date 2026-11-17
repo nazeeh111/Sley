@@ -1,0 +1,58 @@
+{
+  "nativeZipMembers": [
+    "adapted.wif",
+    "actions.csv",
+    "tie-up.html"
+  ],
+  "originalProjectSaveByteExact": true,
+  "freshNativeImportLiftplan": [
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    []
+  ],
+  "threading": [
+    1,
+    2
+  ],
+  "independentSectionUnionEqualsOriginal": true,
+  "physicalSlots": [
+    1,
+    2,
+    3
+  ],
+  "unusedUntiedSlot": 3,
+  "actions": [
+    "1",
+    "2",
+    "1 2",
+    ""
+  ],
+  "all8DrawdownCells": [
+    [
+      true,
+      false
+    ],
+    [
+      false,
+      true
+    ],
+    [
+      true,
+      true
+    ],
+    [
+      false,
+      false
+    ]
+  ],
+  "preservedWarpWeftThreadingSections": true,
+  "nativeCSVCRLF": 5
+}

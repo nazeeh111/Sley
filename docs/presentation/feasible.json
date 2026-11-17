@@ -1,0 +1,122 @@
+{
+  "status": "feasible",
+  "work": 51,
+  "work_limit": 500000,
+  "elapsed_seconds": 2.5458000891376287e-05,
+  "unique_lifts": 4,
+  "candidate_effects": 3,
+  "search_states": 2,
+  "optimality": "not requested; fixed physical slot count",
+  "semantics": "rising_shed_union",
+  "declared_fixed_tie_up": [
+    [
+      1
+    ],
+    null,
+    []
+  ],
+  "tie_up": [
+    {
+      "physical_slot": 1,
+      "label": "Pedal 1",
+      "logical_treadle": 1,
+      "raises": [
+        1
+      ]
+    },
+    {
+      "physical_slot": 2,
+      "label": "Pedal 2",
+      "logical_treadle": 2,
+      "raises": [
+        2
+      ]
+    },
+    {
+      "physical_slot": 3,
+      "label": "Pedal 3",
+      "logical_treadle": null,
+      "raises": []
+    }
+  ],
+  "logical_to_physical": {
+    "1": 1,
+    "2": 2
+  },
+  "picks": [
+    {
+      "pick": 1,
+      "physical_slots": [
+        1
+      ],
+      "logical_treadles": [
+        1
+      ],
+      "raised_shafts": [
+        1
+      ]
+    },
+    {
+      "pick": 2,
+      "physical_slots": [
+        2
+      ],
+      "logical_treadles": [
+        2
+      ],
+      "raised_shafts": [
+        2
+      ]
+    },
+    {
+      "pick": 3,
+      "physical_slots": [
+        1,
+        2
+      ],
+      "logical_treadles": [
+        1,
+        2
+      ],
+      "raised_shafts": [
+        1,
+        2
+      ]
+    },
+    {
+      "pick": 4,
+      "physical_slots": [],
+      "logical_treadles": [],
+      "raised_shafts": []
+    }
+  ],
+  "preserves_all_lifts": true,
+  "input_mode": "tieup_treadling",
+  "declared_allowed_pairs": [
+    [
+      1,
+      2
+    ]
+  ],
+  "source_picks": 4,
+  "source_ends": 2,
+  "wif_to_physical": {
+    "1": 1,
+    "2": 2,
+    "3": 3
+  },
+  "wif_treadles_by_pick": [
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    []
+  ],
+  "drawdown_sha256": "65e3668b21c423ec010cbe9d8d7bc09cab4302f218b267a4a3630884954f8785"
+}

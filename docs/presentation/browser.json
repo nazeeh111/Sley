@@ -1,0 +1,191 @@
+{
+  "infeasible": "Completed finite search. No plan satisfies these constraints. 42 steps.",
+  "selected": {
+    "shafts": "1, 2",
+    "action": "12"
+  },
+  "rest": "None · rest",
+  "invalidProjectPreservesFeasible": true,
+  "cancelStartingRequestPreservesDraft": true,
+  "cancelRequiresFreshSolve": true,
+  "reopenedUncheckedThenFeasible": {
+    "tieup": "1\n·\n1\n2\n2\n·\n3\n·\n·\nUnused",
+    "fixed": ""
+  },
+  "invalidWIFPreservesFeasible": true,
+  "phoneOverflow": false,
+  "errors": [],
+  "jobs": [
+    {
+      "state": "running",
+      "digest": "bc977600799d0447afea1f5edcdce965a4a235b5ef5d18fd4b42488531e006dd"
+    },
+    {
+      "state": "complete",
+      "digest": "bc977600799d0447afea1f5edcdce965a4a235b5ef5d18fd4b42488531e006dd",
+      "result": {
+        "status": "infeasible",
+        "work": 42,
+        "work_limit": 500000,
+        "elapsed_seconds": 0.00004479199924389832,
+        "declared_fixed_tie_up": [
+          [
+            1
+          ],
+          null,
+          []
+        ]
+      }
+    },
+    {
+      "state": "running",
+      "digest": "b16550342b2c5959fa4e40e8e75701364bf2b76a1cde29a0b0806e0eb9e19a3d"
+    },
+    {
+      "state": "complete",
+      "digest": "b16550342b2c5959fa4e40e8e75701364bf2b76a1cde29a0b0806e0eb9e19a3d",
+      "result": {
+        "status": "feasible",
+        "work": 51,
+        "work_limit": 500000,
+        "elapsed_seconds": 0.000027707999834092334,
+        "declared_fixed_tie_up": [
+          [
+            1
+          ],
+          null,
+          []
+        ],
+        "tie_up": [
+          {
+            "physical_slot": 1,
+            "raises": [
+              1
+            ]
+          },
+          {
+            "physical_slot": 2,
+            "raises": [
+              2
+            ]
+          },
+          {
+            "physical_slot": 3,
+            "raises": []
+          }
+        ],
+        "picks": [
+          {
+            "pick": 1,
+            "physical_slots": [
+              1
+            ],
+            "raised_shafts": [
+              1
+            ]
+          },
+          {
+            "pick": 2,
+            "physical_slots": [
+              2
+            ],
+            "raised_shafts": [
+              2
+            ]
+          },
+          {
+            "pick": 3,
+            "physical_slots": [
+              1,
+              2
+            ],
+            "raised_shafts": [
+              1,
+              2
+            ]
+          },
+          {
+            "pick": 4,
+            "physical_slots": [],
+            "raised_shafts": []
+          }
+        ]
+      }
+    },
+    {
+      "state": "running",
+      "digest": "b16550342b2c5959fa4e40e8e75701364bf2b76a1cde29a0b0806e0eb9e19a3d"
+    },
+    {
+      "state": "complete",
+      "digest": "b16550342b2c5959fa4e40e8e75701364bf2b76a1cde29a0b0806e0eb9e19a3d",
+      "result": {
+        "status": "feasible",
+        "work": 51,
+        "work_limit": 500000,
+        "elapsed_seconds": 0.000025958001060644165,
+        "declared_fixed_tie_up": [
+          [
+            1
+          ],
+          null,
+          []
+        ],
+        "tie_up": [
+          {
+            "physical_slot": 1,
+            "raises": [
+              1
+            ]
+          },
+          {
+            "physical_slot": 2,
+            "raises": [
+              2
+            ]
+          },
+          {
+            "physical_slot": 3,
+            "raises": []
+          }
+        ],
+        "picks": [
+          {
+            "pick": 1,
+            "physical_slots": [
+              1
+            ],
+            "raised_shafts": [
+              1
+            ]
+          },
+          {
+            "pick": 2,
+            "physical_slots": [
+              2
+            ],
+            "raised_shafts": [
+              2
+            ]
+          },
+          {
+            "pick": 3,
+            "physical_slots": [
+              1,
+              2
+            ],
+            "raised_shafts": [
+              1,
+              2
+            ]
+          },
+          {
+            "pick": 4,
+            "physical_slots": [],
+            "raised_shafts": []
+          }
+        ]
+      }
+    }
+  ]
+}
