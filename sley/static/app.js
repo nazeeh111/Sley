@@ -3,6 +3,8 @@ import {
   validateProject,
   validateFixedTieUp,
   resizeFixedTieUp,
+  validateExistingTieUp,
+  resizeExistingTieUp,
   pairPreset,
   boundedWindow,
   Revision,
@@ -17,6 +19,7 @@ const state = {
   slots: 8,
   pairs: pairPreset(8, "all"),
   fixed: Array(8).fill(null),
+  existing: null,
   pedal: 0,
   selected: 0,
   end: 0,
@@ -62,6 +65,7 @@ function controls() {
   $("save-project").disabled = !state.draft;
   $("solve").disabled =
     !state.draft || state.starting || state.job?.running || state.importing;
+  $("optimize").disabled = $("solve").disabled || state.existing === null;
   $("cancel").disabled = !state.starting && !state.job?.running;
   $("export").disabled = !feasible();
   $("adapted-view").disabled = !feasible();
@@ -94,11 +98,12 @@ function invalidate(detail = "Constraints changed. Find a new plan.") {
 function project() {
   return validateProject({
     format: "sley-project",
-    version: 2,
+    version: 3,
     wif: state.wif,
     slot_count: state.slots,
     allowed_pairs: state.pairs,
     fixed_tie_up: state.fixed,
+    existing_tie_up: state.existing,
   });
 }
 function download(blob, name) {
@@ -136,10 +141,13 @@ async function importText(
         draft.shafts,
       )
     : Array(state.slots).fill(null);
+  const existing = constraints?.existing_tie_up == null ? null
+    : validateExistingTieUp(constraints.existing_tie_up, constraints.slot_count, draft.shafts);
   invalidate("Draft loaded. Set constraints, then find a plan.");
   state.wif = wif;
   state.draft = draft;
   state.fixed = fixed;
+  state.existing = existing;
   state.pedal = 0;
   state.selected = 0;
   state.end = 0;
@@ -161,6 +169,7 @@ async function importText(
   $("pick-number").disabled = false;
   renderPairs();
   renderFixed();
+  renderExisting();
   controls();
   renderPick();
   renderTieup();
@@ -289,6 +298,54 @@ function fixedLabel(raises) {
       ? `Fixed · shafts ${raises.join(", ")}`
       : "Fixed · keep untied";
 }
+function renderExisting() {
+  const source = state.draft?.source_tie_up;
+  $("existing-copy").disabled = !Array.isArray(source) || source.length !== state.slots;
+  $("existing-empty").disabled = !state.draft;
+  $("existing-clear").disabled = state.existing === null;
+  $("existing-note").textContent = state.existing === null
+    ? "No starting setup declared. Copy an input tie-up with the same pedal count or declare all pedals untied, then edit."
+    : "Checked boxes are existing connections. Empty rows are untied. Changes are counted against this setup; fixed assignments above remain separate requirements.";
+  const container = $("existing-grid");
+  container.replaceChildren();
+  if (state.existing === null) return;
+  state.existing.forEach((raises, pedal) => {
+    const row = document.createElement("fieldset"), legend = document.createElement("legend");
+    legend.textContent = `Existing pedal ${pedal + 1}`;
+    row.className = "fixed-shafts";
+    row.append(legend);
+    for (let shaft = 1; shaft <= state.draft.shafts; shaft++) {
+      const label = document.createElement("label"), input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = raises.includes(shaft);
+      input.setAttribute("aria-label", `Existing pedal ${pedal + 1} raises shaft ${shaft}`);
+      input.addEventListener("change", () => {
+        const selected = new Set(state.existing[pedal]);
+        input.checked ? selected.add(shaft) : selected.delete(shaft);
+        state.existing[pedal] = [...selected].sort((a, b) => a - b);
+        invalidate();
+      });
+      label.append(input, document.createTextNode(String(shaft)));
+      row.append(label);
+    }
+    container.append(row);
+  });
+}
+$("existing-copy").addEventListener("click", () => {
+  state.existing = validateExistingTieUp(state.draft.source_tie_up, state.slots, state.draft.shafts);
+  invalidate();
+  renderExisting();
+});
+$("existing-empty").addEventListener("click", () => {
+  state.existing = Array.from({length: state.slots}, () => []);
+  invalidate();
+  renderExisting();
+});
+$("existing-clear").addEventListener("click", () => {
+  state.existing = null;
+  invalidate();
+  renderExisting();
+});
 function renderFixedSummary() {
   $("fixed-summary").replaceChildren();
   state.fixed.forEach((raises, i) => {
@@ -372,7 +429,10 @@ $("copy-source-pedal").addEventListener("click", () => {
 $("slot-count").addEventListener("change", () => {
   const slots = Number($("slot-count").value);
   try {
-    state.fixed = resizeFixedTieUp(state.fixed, slots);
+    const fixed = resizeFixedTieUp(state.fixed, slots);
+    const existing = resizeExistingTieUp(state.existing, slots);
+    state.fixed = fixed;
+    state.existing = existing;
   } catch (error) {
     $("slot-count").value = String(state.slots);
     message(error.message, true);
@@ -384,6 +444,7 @@ $("slot-count").addEventListener("change", () => {
   invalidate();
   renderPairs();
   renderFixed();
+  renderExisting();
   $("pair-note").textContent =
     "Press a pair to allow or disallow it. Presets remain editable.";
 });
@@ -399,8 +460,9 @@ for (const button of document.querySelectorAll("[data-preset]"))
           ? `Two banks: 1–${Math.ceil(state.slots / 2)} and ${Math.ceil(state.slots / 2) + 1}–${state.slots}. Cross-bank preset applied; each pair remains editable.`
           : "Press a pair to allow or disallow it. Presets remain editable.";
   });
-$("solve").addEventListener("click", async () => {
+async function findPlan(optimize = false) {
   if (!state.draft || state.starting || state.job?.running) return;
+  if (optimize && state.existing === null) return;
   invalidate("Finding a plan…");
   const token = revision.token();
   state.starting = true;
@@ -412,6 +474,7 @@ $("solve").addEventListener("click", async () => {
       slot_count: state.slots,
       allowed_pairs: state.pairs,
       fixed_tie_up: state.fixed,
+      ...(optimize ? {existing_tie_up: state.existing} : {}),
     });
     if (!revision.current(token)) {
       cancelRemote({ id: started.job_id });
@@ -434,7 +497,9 @@ $("solve").addEventListener("click", async () => {
       controls();
     }
   }
-});
+}
+$("solve").addEventListener("click", () => findPlan());
+$("optimize").addEventListener("click", () => findPlan(true));
 async function poll(token, id) {
   try {
     const job = await api(`/api/jobs/${encodeURIComponent(id)}`);
@@ -456,8 +521,10 @@ async function poll(token, id) {
       const result = job.result;
       if (result.status === "feasible")
         status(
-          "Feasible",
-          `Checked plan · ${result.work.toLocaleString()} search steps · ${result.elapsed_seconds.toFixed(2)} s`,
+          result.optimality === "proven" ? "Optimal" : "Feasible",
+          result.objective
+            ? `Connection changes, then paired pick occurrences: first feasible ${result.initial_objective.join(" / ")} → best found ${result.objective.join(" / ")}. ${result.optimality === "proven" ? "Optimality proven." : "Optimality not proven; search budget exhausted."} Export contains the best found plan.`
+            : `Checked plan · ${result.work.toLocaleString()} search steps · ${result.elapsed_seconds.toFixed(2)} s`,
           "feasible",
         );
       else if (result.status === "infeasible")
@@ -792,4 +859,5 @@ $("fabric").addEventListener("keydown", (event) => {
 });
 new ResizeObserver(() => draw()).observe($("fabric").parentElement);
 renderPairs();
+renderExisting();
 controls();

@@ -98,8 +98,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("Incomplete request body")
             request = parse_json(raw)
             expected = POST_KEYS[self.path]
-            if self.path == "/api/solve" and type(request) is dict and "fixed_tie_up" in request:
-                expected = expected | {"fixed_tie_up"}
+            if self.path == "/api/solve" and type(request) is dict:
+                expected = expected | (set(request) & {"fixed_tie_up", "existing_tie_up"})
             exact_keys(request, expected)
             if self.path == "/api/import":
                 self.json(200, imported(request["wif"]))

@@ -828,6 +828,22 @@ button.busy {
   }
 }
 
+.existing-editor {
+  margin-block: 1rem;
+}
+.existing-editor summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+#existing-grid fieldset {
+  border: 0;
+  border-bottom: 1px solid var(--line, #dedbd3);
+  padding: .5rem 0;
+  margin: .5rem 0;
+}
+#existing-grid legend {
+  font-size: .8rem;
+}
 .fixed-editor {
   border: 0;
   border-top: 1px solid var(--line);

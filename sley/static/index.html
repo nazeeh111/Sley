@@ -135,6 +135,19 @@
               Find plan <span aria-hidden="true">→</span></button
             ><button id="cancel" disabled>Cancel</button>
           </div>
+          <details class="existing-editor">
+            <summary>Minimize changes to an existing setup</summary>
+            <p class="hint">First minimize added or removed shaft connections, then paired presses across all picks. Declare the existing setup separately from fixed assignments.</p>
+            <div class="fixed-actions">
+              <button id="existing-copy" disabled>Copy whole input tie-up</button>
+              <button id="existing-empty" disabled>Declare all pedals untied</button>
+              <button id="existing-clear" disabled>Clear comparison setup</button>
+            </div>
+            <p id="existing-note" class="hint"></p>
+            <div id="existing-grid"></div>
+            <button id="optimize" disabled>Minimize changes</button>
+            <p class="hint">The first feasible plan is compared with the best found plan. A budgeted result is usable, but is only optimal when the search proves it.</p>
+          </details>
           <div
             id="solve-state"
             class="solve-state"

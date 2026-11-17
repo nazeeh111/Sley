@@ -47,7 +47,7 @@ def constraints(count, pairs):
     return slots, sorted([sorted(pair) for pair in pairs])
 
 
-def prepare(wif, slot_count=_UNSET, allowed_pairs=None, fixed_tie_up=_UNSET):
+def prepare(wif, slot_count=_UNSET, allowed_pairs=None, fixed_tie_up=_UNSET, existing_tie_up=_UNSET):
     document = import_wif(wif)
     if len({tuple(lift) for lift in document.liftplan}) > 128:
         raise ValueError("supported limit: at most 128 distinct lift sets per draft")
@@ -57,6 +57,11 @@ def prepare(wif, slot_count=_UNSET, allowed_pairs=None, fixed_tie_up=_UNSET):
         fixed = fixed_assignments([None] * slot_count if fixed_tie_up is _UNSET else fixed_tie_up,
                                   slot_count, document.shafts)
         payload.update(slot_count=slot_count, allowed_pairs=normalized, fixed_tie_up=fixed)
+        if existing_tie_up is not _UNSET:
+            existing = fixed_assignments(existing_tie_up, slot_count, document.shafts)
+            if any(raises is None for raises in existing):
+                raise ValueError("existing tie-up requires every physical pedal, including untied pedals")
+            payload["existing_tie_up"] = existing
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
     return document, payload, digest
 
@@ -92,24 +97,39 @@ def validate_project(raw):
     if type(raw) is not str or len(raw.encode("utf-8")) > MAX_PROJECT:
         raise ValueError("project exceeds the 7 MiB UTF-8 file limit")
     project = parse_json(raw)
-    if type(project) is not dict or project.get("format") != "sley-project" or type(project.get("version")) is not int or project["version"] not in (1, 2):
-        raise ValueError("project requires format sley-project and version 1 or 2")
+    if type(project) is not dict or project.get("format") != "sley-project" or type(project.get("version")) is not int or project["version"] not in (1, 2, 3):
+        raise ValueError("project requires format sley-project and version 1, 2 or 3")
     keys = {"format", "version", "wif", "slot_count", "allowed_pairs"}
-    exact_keys(project, keys if project["version"] == 1 else keys | {"fixed_tie_up"}, "project")
+    if project["version"] >= 2:
+        keys.add("fixed_tie_up")
+    if project["version"] == 3:
+        keys.add("existing_tie_up")
+    exact_keys(project, keys, "project")
     fields = {k: v for k, v in project.items() if k not in {"format", "version"}}
+    if fields.get("existing_tie_up", _UNSET) is None:
+        fields.pop("existing_tie_up")
     _, normalized, _ = prepare(**fields)
+    if project["version"] == 3:
+        return {"format": "sley-project", "version": 3, "existing_tie_up": None, **normalized}
     return {"format": "sley-project", "version": 2, **normalized}
 
 
 def solve_request(payload):
     document, normalized, _ = prepare(**payload)
     slots, pairs = constraints(normalized["slot_count"], normalized["allowed_pairs"])
-    return adapt(document, slots, pairs, fixed_tie_up=normalized["fixed_tie_up"], work_limit=CHECK_WORK, seconds=5)
+    comparison = ({"existing_tie_up": normalized["existing_tie_up"]}
+                  if "existing_tie_up" in normalized else {})
+    return adapt(document, slots, pairs, fixed_tie_up=normalized["fixed_tie_up"],
+                 work_limit=CHECK_WORK, seconds=5, **comparison)
 
 
 def public_result(result):
     response = {k: result[k] for k in ("status", "work", "work_limit", "elapsed_seconds")}
     response["declared_fixed_tie_up"] = result["declared_fixed_tie_up"]
+    if "optimality" in result:
+        response.update({k: result[k] for k in
+                         ("optimality", "objective", "initial_objective", "objective_lower_bound")
+                         if k in result})
     if result["status"] == "feasible":
         response["tie_up"] = [{"physical_slot": row["physical_slot"], "raises": row["raises"]} for row in result["tie_up"]]
         response["picks"] = [{k: row[k] for k in ("pick", "physical_slots", "raised_shafts")} for row in result["picks"]]

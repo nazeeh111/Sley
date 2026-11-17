@@ -134,3 +134,22 @@ test("pedal resizing refuses removal of fixed empty or raised pedals", () => {
     null,
   ]);
 });
+
+test("version 3 retains explicit comparison without sharing mutable arrays", () => {
+  const saved = {...fixedProject, version: 3, existing_tie_up: [[], [1, 2], [], [3]]};
+  const opened = validateProject(saved);
+  assert.deepEqual(opened, saved);
+  opened.existing_tie_up[1].push(3);
+  assert.deepEqual(saved.existing_tie_up[1], [1, 2]);
+  assert.equal(validateProject({...saved, existing_tie_up: null}).existing_tie_up, null);
+  for (const existing_tie_up of [[[], null, [], []], [[]], [[false], [], [], []], [[2, 1], [], [], []]])
+    assert.throws(() => validateProject({...saved, existing_tie_up}));
+});
+test("comparison resizing preserves existing connections or refuses without mutation", () => {
+  const existing = [[1], [], [2]];
+  assert.throws(() => model.resizeExistingTieUp(existing, 2));
+  assert.deepEqual(existing, [[1], [], [2]]);
+  assert.deepEqual(model.resizeExistingTieUp([[1], [], []], 2), [[1], []]);
+  assert.deepEqual(model.resizeExistingTieUp([[1]], 3), [[1], [], []]);
+  assert.equal(model.resizeExistingTieUp(null, 3), null);
+});

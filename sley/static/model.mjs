@@ -1,7 +1,7 @@
 export const MAX_WIF_BYTES = 1024 * 1024;
 export function validateProject(value) {
   const keys =
-    value?.version === 2
+    value?.version >= 2
       ? [
           "allowed_pairs",
           "fixed_tie_up",
@@ -11,6 +11,10 @@ export function validateProject(value) {
           "wif",
         ]
       : ["allowed_pairs", "format", "slot_count", "version", "wif"];
+  if (value?.version === 3) {
+    keys.push("existing_tie_up");
+    keys.sort();
+  }
   if (
     !value ||
     typeof value !== "object" ||
@@ -20,7 +24,7 @@ export function validateProject(value) {
     throw new Error(
       "Project must contain only format, version, WIF and pedal constraints.",
     );
-  if (value.format !== "sley-project" || ![1, 2].includes(value.version))
+  if (value.format !== "sley-project" || ![1, 2, 3].includes(value.version))
     throw new Error("Unsupported project format or version.");
   if (
     typeof value.wif !== "string" ||
@@ -53,7 +57,7 @@ export function validateProject(value) {
     if (seen.has(key)) throw new Error("Duplicate allowed pair.");
     seen.add(key);
   }
-  return {
+  const project = {
     format: value.format,
     version: 2,
     wif: value.wif,
@@ -66,6 +70,12 @@ export function validateProject(value) {
       value.slot_count,
     ),
   };
+  if (value.version === 3) {
+    project.version = 3;
+    project.existing_tie_up = value.existing_tie_up === null
+      ? null : validateExistingTieUp(value.existing_tie_up, value.slot_count);
+  }
+  return project;
 }
 export function pairPreset(slots, mode) {
   const pairs = [];
@@ -141,4 +151,17 @@ export function resizeFixedTieUp(fixed, slots) {
   return Array.from({ length: slots }, (_, i) =>
     fixed[i] === undefined || fixed[i] === null ? null : [...fixed[i]],
   );
+}
+
+export function validateExistingTieUp(existing, slots, shafts = 8) {
+  const normalized = validateFixedTieUp(existing, slots, shafts);
+  if (normalized.some((raises) => raises === null))
+    throw new Error("Declare every existing pedal, including untied pedals.");
+  return normalized;
+}
+export function resizeExistingTieUp(existing, slots) {
+  if (existing === null) return null;
+  if (existing.slice(slots).some((raises) => raises.length))
+    throw new Error("Untie removed existing pedals before reducing the pedal count.");
+  return Array.from({ length: slots }, (_, i) => [...(existing[i] || [])]);
 }
