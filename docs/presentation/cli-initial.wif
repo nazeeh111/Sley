@@ -1,0 +1,39 @@
+[WIF]
+VERSION=1.1
+DATE=April 20, 1997
+DEVELOPERS=Self-authored test
+SOURCE PROGRAM=Sley
+SOURCE VERSION=0.2.5.dev0
+
+[CONTENTS]
+WARP=true
+WEFT=true
+THREADING=true
+WEAVING=true
+TIEUP=true
+TREADLING=true
+LIFTPLAN=false
+
+[WEAVING]
+SHAFTS=2
+TREADLES=3
+RISING SHED=true
+
+[WARP]
+Threads=2
+[WEFT]
+Threads=4
+[THREADING]
+1=1
+2=2
+[TIEUP]
+1=1
+2=2
+3=0
+
+[TREADLING]
+1=1
+2=2
+3=1,2
+4=0
+

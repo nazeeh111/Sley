@@ -1,16 +1,26 @@
 # Sley
 
-<img src="sley/static/favicon.svg" alt="" width="40" height="40">
+**Keep the draft. Change the footwork.**
 
-Adapt a weaving draft to your physical pedals and allowed pairs.
+Adapt a supported weaving draft to your physical pedals, fixed tie-ups and
+allowed pedal pairs. Sley finds a pressing sequence that raises exactly the
+original shafts, then exports the adapted WIF, actions and printable tie-up.
+It runs locally with Python's standard library and your browser.
 
-Open a supported WIF (Weaving Information File), choose which pedals may be pressed together, and inspect the resulting tie-up and pressing sequence. Sley preserves the draft's threading, lifts, colors and independent metadata.
+[Run locally](#run-locally) · [Try this worked draft](docs/presentation/README.md) ·
+[Download the complete example](docs/presentation/worked-example.zip) ·
+[Supported WIF profile](docs/wif.md)
 
-[Run locally](#run-locally) · [Download v0.2.4](https://github.com/nazeeh111/Sley/releases/tag/v0.2.4) · [Supported WIF profile](docs/wif.md)
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/presentation/fixed-footwork-mobile.svg">
+  <img src="docs/presentation/fixed-footwork.svg" alt="An actual four-pick synthetic weaving draft keeps pedal 1 tied to shaft 1 and pedal 3 untied. The solver assigns shaft 2 to pedal 2. Pressing 1, 2, the allowed pair 1 and 2, then no pedal preserves all eight cloth cells through WIF export and reopening. Removing pair 1 and 2 makes these fixed constraints infeasible.">
+</picture>
 
-![A checked eight-shaft draft showing selected pick 1, physical pedals 4 and 8, and the preserved adapted drawdown](docs/workflow.jpg)
-
-Here the selected pick uses physical pedals 4 and 8 together. The adapted drawdown retains the requested lifts; the tie-up and pressing sequence show how to produce them.
+**One permission changes whether this draft can be woven in the declared model.**
+Pedal 3 must stay untied, so pick 3 needs pair **1+2**. The saved result retains
+all four source pick indices, including the rest, and every physical pedal
+position. This is a checked rising-shed union model, not approval of loom
+mechanics or the weaver's physical setup.
 
 ## Run locally
 
@@ -104,3 +114,9 @@ and never means infeasible. The report's lower bound `[mandatory fixed edits, 0]
 is deliberately conservative. Existing output files are never overwritten.
 Exports pass the same full lift/threading reimport verification as browser plans.
 No additional dependencies, network service or supported loom family is implied.
+
+## Larger workbench example
+
+![A checked eight-shaft draft showing selected pick 1, physical pedals 4 and 8, and the preserved adapted drawdown](docs/workflow.jpg)
+
+The retained eight-shaft capture illustrates another supported draft. It is separate from the newly executed four-pick case above.

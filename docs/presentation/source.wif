@@ -1,0 +1,32 @@
+[WIF]
+Version=1.1
+Date=April 20, 1997
+Developers=Self-authored test
+Source Program=Self-authored fixture
+[CONTENTS]
+WEAVING=true
+WARP=true
+WEFT=true
+THREADING=true
+TIEUP=true
+TREADLING=true
+[WEAVING]
+Shafts=2
+Treadles=3
+Rising Shed=true
+[WARP]
+Threads=2
+[WEFT]
+Threads=4
+[THREADING]
+1=1
+2=2
+[TIEUP]
+1=1
+2=2
+3=0
+[TREADLING]
+1=1
+2=2
+3=1,2
+4=0

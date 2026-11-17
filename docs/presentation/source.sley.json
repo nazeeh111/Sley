@@ -1,0 +1,19 @@
+{
+  "format": "sley-project",
+  "version": 2,
+  "wif": "[WIF]\nVersion=1.1\nDate=April 20, 1997\nDevelopers=Self-authored test\nSource Program=Self-authored fixture\n[CONTENTS]\nWEAVING=true\nWARP=true\nWEFT=true\nTHREADING=true\nTIEUP=true\nTREADLING=true\n[WEAVING]\nShafts=2\nTreadles=3\nRising Shed=true\n[WARP]\nThreads=2\n[WEFT]\nThreads=4\n[THREADING]\n1=1\n2=2\n[TIEUP]\n1=1\n2=2\n3=0\n[TREADLING]\n1=1\n2=2\n3=1,2\n4=0\n",
+  "slot_count": 3,
+  "allowed_pairs": [
+    [
+      1,
+      2
+    ]
+  ],
+  "fixed_tie_up": [
+    [
+      1
+    ],
+    null,
+    []
+  ]
+}

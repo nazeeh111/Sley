@@ -1,0 +1,2 @@
+# Preserve the native CSV export and its bound evidence bytes.
+docs/presentation/actions.csv -text -eol

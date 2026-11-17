@@ -1,0 +1,22 @@
+{
+  "status": "infeasible",
+  "work": 42,
+  "work_limit": 500000,
+  "elapsed_seconds": 1.3458000466926023e-05,
+  "unique_lifts": 4,
+  "candidate_effects": 3,
+  "search_states": 2,
+  "optimality": "not requested; fixed physical slot count",
+  "semantics": "rising_shed_union",
+  "declared_fixed_tie_up": [
+    [
+      1
+    ],
+    null,
+    []
+  ],
+  "input_mode": "tieup_treadling",
+  "declared_allowed_pairs": [],
+  "source_picks": 4,
+  "source_ends": 2
+}

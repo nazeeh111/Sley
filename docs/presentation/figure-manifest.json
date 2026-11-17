@@ -1,0 +1,19 @@
+{
+  "source_commit": "e93ac8fd4e6810658150e8f1f8357973c748ddf1",
+  "source_tree": "f520a2acd5df486c9e7ea3fa3899ba1699d36d60",
+  "encoding": "All eight native WIF drawdown cells and twelve physical pressing cells; exact fixed/free/untied semantics; categorical schematic, no physical fabric scale",
+  "files": {
+    "feasible.json": "ec726faac0ffa2534716a5368e70cef33a2c8027cd45800b212e08c1aaf4bde5",
+    "infeasible.json": "368063df005817f1e9e1b85a59ce95a1c51f7a17d11b30393f1f7a74512350a4",
+    "reopen-check.json": "50113bc8b2c58631d605e700888ba86c9f0c4391992ce93d5c455a5a7a78d0f8",
+    "source.wif": "df5ff69ef37af873c69df1863890794904611fcf35d503bae7f9b958c7b6a219",
+    "adapted.wif": "c28c4ac20cdf7029caa9a5fd35f73fb62dc436a59fc6257b91250618db8deffa",
+    "actions.csv": "74e978ebad00efeb4080162c8b447a43af3735224513a67fb02b5c8056e62a55",
+    "figure.py": "92cac2d82d0c715d8ab138b57a1f85170b82e77af0554c1c5d8eac8d07c71dfc",
+    "fixed-footwork.svg": "efa94b6dd5a998594c1b3ac6e794bb7c536918799a6214dbb5ad34ff3ccead16",
+    "fixed-footwork-mobile.svg": "63a30adb54906dc42849997f41de307b0761f4d7a9dba655bee5650bca46bc78",
+    "fixed-footwork.png": "ca68f24e9ad4ed157d8078466481fb14c3f8d311763935d05e9ef90f7c5b812e",
+    "fixed-footwork-mobile.png": "5f78ef7ae23f56f4cb6923b241d50d475ed70c9ea7e3fb426eacc36367f5d0dc",
+    "worked-example.zip": "e590bd432a8ba632603e25b0c951991bfb6825b1a94aafcee45d13353ef75c84"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "slot_count": 3,
+  "allowed_pairs": [
+    [
+      1,
+      2
+    ]
+  ],
+  "fixed_tie_up": [
+    [
+      1
+    ],
+    null,
+    []
+  ],
+  "existing_tie_up": [
+    [
+      1
+    ],
+    [
+      2
+    ],
+    []
+  ]
+}
