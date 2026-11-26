@@ -1,6 +1,6 @@
 # A fixed pedal makes the allowed pair matter
 
-This self-authored two-shaft fixture is bundled with current Sley source `e93ac8fd4e6810658150e8f1f8357973c748ddf1`. It has two threaded ends and four picks. It is a small model example, not a recorded physical weaving trial.
+This self-authored two-shaft fixture was recorded at source revision `e93ac8fd4e6810658150e8f1f8357973c748ddf1` and remains bundled. It has two threaded ends and four picks. It is a small model example, not a recorded physical weaving trial.
 
 ## Use the actual workbench
 
@@ -10,7 +10,7 @@ From this source checkout with Python 3.12 or newer:
 python -m sley --no-browser
 ```
 
-Open the printed local URL, then **Open project** → `sley/examples/fixed-pedals.sley.json`.
+Open the printed local URL and choose **Try the four-pick draft**. For a portable copy, use **Open project** with `sley/examples/fixed-pedals.sley.json`.
 
 1. The saved constraints fix pedal 1 to shaft 1, leave pedal 2 free and keep pedal 3 untied. Only pair 1+2 is allowed.
 2. Choose **Single only**, then **Find plan**. The result is Infeasible: no one pedal can produce the combined lift without violating a fixed assignment. No partial result can export.
@@ -18,7 +18,7 @@ Open the printed local URL, then **Open project** → `sley/examples/fixed-pedal
 4. **Save project** and **Export result ZIP**. The actual outputs are [saved.sley.json](saved.sley.json) and [adapted.zip](adapted.zip).
 5. Open the saved project in a fresh browser session. Projects retain original WIF and constraints, not a calculated result, so **Find plan** again before export. Importing the exported [adapted.wif](adapted.wif) separately retains the same threading and shaft lifts; a fresh WIF import resets fixed assignments by design.
 
-The original and saved project bytes match exactly. Malformed WIF/project imports retain the current feasible draft. Cancelling an actual starting request retains the draft, disables export and requires a fresh solve. This tiny search was not a long-running cancellation benchmark. Editing any constraint invalidates the old plan. [Actual browser record](browser.json).
+The historical bundle contains identical input and saved version 2 project bytes. Current saves emit version 3 and retain the same input WIF and constraints. Malformed WIF/project imports retain the current feasible draft. Cancelling an actual starting request retains the draft, disables export and requires a fresh solve. This tiny search was not a long-running cancellation benchmark. Editing any constraint invalidates the old plan. [Actual browser record](browser.json).
 
 ## What the artifact proves
 
@@ -31,11 +31,11 @@ The original and saved project bytes match exactly. Malformed WIF/project import
 
 Pedal positions remain 1,2,3, including unused untied pedal 3. The native ZIP contains [adapted.wif](adapted.wif), [actions.csv](actions.csv) and [tie-up.html](tie-up.html). A fresh native import and an independent section/union readback match all eight drawdown bits, original threading, warp/weft sections and physical actions. [Complete readback](reopen-check.json) · [feasible record](feasible.json) · [infeasible record](infeasible.json).
 
-The mechanism figure is a categorical draft schematic, not a spatial textile model. Filled cloth cells mean warp above weft. E1 threads shaft 1 and E2 threads shaft 2. Every pick and every physical pedal is included; original loopback job identities/timing in the raw record identify this execution, not bitwise future exports.
+The main README captures the current workbench with pick 3 selected. The [mechanism figure](fixed-footwork.svg) is a categorical draft schematic, not a spatial textile model. Filled cloth cells mean warp above weft. E1 threads shaft 1 and E2 threads shaft 2. Every pick and every physical pedal is included; original loopback job identities/timing in the raw record identify this execution, not bitwise future exports.
 
 ## Compare a declared existing setup
 
-The current-main CLI optimizer is separate from the browser's first-feasible solver. This case deliberately declares an existing setup that already works: `[[1],[2],[]]`.
+The CLI and browser both support change-aware optimization alongside first-feasible planning. This case deliberately declares an existing setup that already works: `[[1],[2],[]]`.
 
 ```sh
 python -m sley compare docs/presentation/source.wif docs/presentation/constraints.json --choose optimized --export /tmp/sley-worked.wif > /tmp/sley-comparison.json

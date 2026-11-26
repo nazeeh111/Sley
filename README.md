@@ -12,15 +12,15 @@ It runs locally with Python's standard library and your browser.
 [Supported WIF profile](docs/wif.md)
 
 <picture>
-  <source media="(max-width: 600px)" srcset="docs/presentation/fixed-footwork-mobile.svg">
-  <img src="docs/presentation/fixed-footwork.svg" alt="An actual four-pick synthetic weaving draft keeps pedal 1 tied to shaft 1 and pedal 3 untied. The solver assigns shaft 2 to pedal 2. Pressing 1, 2, the allowed pair 1 and 2, then no pedal preserves all eight cloth cells through WIF export and reopening. Removing pair 1 and 2 makes these fixed constraints infeasible.">
+  <source media="(max-width: 600px)" srcset="docs/presentation/pressing-sequence-mobile.png">
+  <img src="docs/presentation/pressing-sequence.png" alt="Sley shows the two-end drawdown, three physical pedals and all four presses. Selected pick 3 raises shafts 1 and 2 with pedal pair 1 + 2. Pick 4 is a rest, and pedal 3 is unused." width="1060">
 </picture>
 
-**One permission changes whether this draft can be woven in the declared model.**
-Pedal 3 must stay untied, so pick 3 needs pair **1+2**. The saved result retains
-all four source pick indices, including the rest, and every physical pedal
-position. This is a checked rising-shed union model, not approval of loom
-mechanics or the weaver's physical setup.
+In the current source, choose **Try the four-pick draft**, then **Find plan**.
+Read the four presses beside the cloth and select pick 3 to locate it in the
+drawdown. Pedal 3 is fixed untied, so allowing **1 + 2** makes the difference
+between a checked plan and an infeasible setup in the rising-shed model.
+[See the worked constraints and export readback](docs/presentation/README.md).
 
 ## Run locally
 
@@ -43,10 +43,10 @@ The launcher opens a loopback URL. Use `sley --no-browser` to print it, or `sley
 
 ## Use a draft
 
-1. Open a WIF or use the bundled eight-shaft example. For the checked AdaCAD 5.1.5 import, use Shaft/Treadle Loom mode; see the [profile notes](docs/wif.md).
+1. Open a WIF or use a bundled draft. **Try the four-pick draft** loads the fixed pedal and pair example. **Eight-shaft example** loads the larger bank-adaptation draft. For the checked AdaCAD 5.1.5 import, use Shaft/Treadle Loom mode; see the [profile notes](docs/wif.md).
 2. Set the physical pedal count and edit allowed pairs. All-pairs, single-pedal and two-bank presets are editable constraints.
 3. Keep selected pedals fixed to exact shaft sets, or choose **Keep untied**. Leave spare pedals **Free** for the solver. **Copy input pedal tie-up** copies only the selected source pedal; it does not assume the input describes your current hardware.
-4. Find a plan. Inspect its drawdown, physical tie-up and selected pick. Cancel a running search if needed.
+4. Find a plan. The pressing sequence follows the drawdown’s pick window. Select a pick in the table to inspect its shafts and pedals, or choose a pedal in the physical tie-up to jump to its next use. Cancel a running search if needed.
 5. Optionally open **Minimize changes to an existing setup**. Copy the whole input tie-up only if it describes your hardware, or declare all pedals untied and edit each connection. **Minimize changes** uses this separate starting setup while respecting fixed assignments and allowed pairs.
 6. Export the current checked result. The ZIP contains `adapted.wif`, `actions.csv` and printable `tie-up.html`.
 
