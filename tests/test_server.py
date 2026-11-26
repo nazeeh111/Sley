@@ -1,6 +1,7 @@
 import http.client
 import io
 import json
+from pathlib import Path
 import threading
 import time
 import unittest
@@ -56,6 +57,13 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(body), example())
         self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+
+    def test_bundled_fixed_pedal_example_matches_the_downloadable_project(self):
+        fixture = Path(__file__).resolve().parents[1] / "sley" / "examples" / "fixed-pedals.sley.json"
+        status, body, _ = self.request("GET", "/api/example/fixed-pedals")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body), json.loads(fixture.read_text(encoding="utf-8")))
+        self.assertEqual(self.request("GET", "/api/example/fixed-pedals?path=extra")[0], 404)
 
     def test_duplicate_json_project_and_raw_import_failures(self):
         self.assertEqual(self.request("POST", "/api/import", raw=b'{"wif":"x","wif":"y"}')[0], 400)

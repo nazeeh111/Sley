@@ -68,8 +68,11 @@ function controls() {
   $("optimize").disabled = $("solve").disabled || state.existing === null;
   $("cancel").disabled = !state.starting && !state.job?.running;
   $("export").disabled = !feasible();
+  $("inspect-footwork").hidden = !feasible();
+  $("tieup-inspection").hidden = !feasible();
   $("adapted-view").disabled = !feasible();
   $("example").disabled = state.importing;
+  $("fixed-example").disabled = state.importing;
   $("open-wif").disabled = state.importing;
   $("open-project").disabled = state.importing;
 }
@@ -224,14 +227,22 @@ $("project-file").addEventListener("change", (event) => {
     await importText(saved.wif, saved, serial, token);
   });
 });
-$("example").addEventListener("click", () => {
+function loadExample(path, title) {
   const serial = ++state.importSerial,
     token = revision.token();
   importing(async () => {
-    const example = await api("/api/example");
-    await importText(example.wif, example, serial, token);
+    const example = await api(path);
+    if (await importText(example.wif, example, serial, token) && title) {
+      $("draft-title").textContent = title;
+      $("file-state").textContent = title;
+      message("Four-pick draft loaded. Pedal 1 is fixed, pedal 3 stays untied and pair 1 + 2 is allowed.");
+    }
   });
-});
+}
+$("example").addEventListener("click", () => loadExample("/api/example"));
+$("fixed-example").addEventListener("click", () =>
+  loadExample("/api/example/fixed-pedals", "Four-pick fixed-pedal draft"),
+);
 $("save-project").addEventListener("click", () => {
   try {
     download(
@@ -646,6 +657,8 @@ function renderPick() {
 }
 function renderTieup() {
   const container = $("tieup-grid");
+  const active = document.activeElement;
+  const focusedPedal = container.contains(active) ? active.dataset.pedal : null;
   container.replaceChildren();
   $("tieup-count").textContent = feasible() ? `${state.slots} positions` : "";
   if (!feasible()) return;
@@ -653,12 +666,15 @@ function renderTieup() {
     tieup = new Map(
       state.result.tie_up.map((item) => [item.physical_slot, item.raises]),
     );
+  let focusTarget;
   for (let slot = 1; slot <= state.slots; slot++) {
     const raises = tieup.get(slot) || [],
       column = document.createElement("div");
     column.className = `pedal${selected.has(slot) ? " active" : ""}`;
     const label = document.createElement("button");
     label.className = "pedal-number";
+    label.dataset.pedal = String(slot);
+    if (label.dataset.pedal === focusedPedal) focusTarget = label;
     label.textContent = String(slot);
     label.title = `Physical pedal ${slot}: shafts ${raises.join(", ") || "none"}. Select next pick using this pedal.`;
     label.setAttribute("aria-label", label.title);
@@ -692,6 +708,42 @@ function renderTieup() {
     }
     container.append(column);
   }
+  focusTarget?.focus({ preventScroll: true });
+}
+function renderFootwork(frame) {
+  const body = $("footwork-rows");
+  const active = document.activeElement;
+  const focusedPick = body.contains(active) ? active.dataset.pick : null;
+  const plan = feasible() ? state.result : null;
+  $("footwork-note").textContent = plan
+    ? "Select a pick to locate it in the drawdown."
+    : "Find a plan to see the physical presses.";
+  const rows = document.createDocumentFragment();
+  let focusTarget;
+  for (let index = frame.pick; index < frame.pick + frame.picks; index++) {
+    const row = document.createElement("tr");
+    const pick = document.createElement("th");
+    const select = document.createElement("button");
+    const shafts = document.createElement("td");
+    const pedals = document.createElement("td");
+    select.type = "button";
+    select.textContent = String(index + 1);
+    select.dataset.pick = String(index);
+    select.setAttribute("aria-label", `Select pick ${index + 1}`);
+    select.addEventListener("click", () => selectPick(index));
+    if (index === state.selected) select.setAttribute("aria-current", "true");
+    if (String(index) === focusedPick) focusTarget = select;
+    pick.scope = "row";
+    pick.append(select);
+    shafts.textContent = state.draft.liftplan[index].join(" + ") || "None";
+    pedals.textContent = plan
+      ? plan.picks[index].physical_slots.join(" + ") || "Rest"
+      : "—";
+    row.append(pick, shafts, pedals);
+    rows.append(row);
+  }
+  body.replaceChildren(rows);
+  focusTarget?.focus({ preventScroll: true });
 }
 function draw() {
   $("source-view").setAttribute(
@@ -704,9 +756,11 @@ function draw() {
   );
   if (!state.draft || $("grid-loaded").hidden) return;
   const available = Math.max(160, $("fabric").parentElement.clientWidth),
-    cell = 18,
     left = 38,
     top = 40;
+  const cell = state.draft.ends <= 12 && state.draft.picks <= 12
+    ? Math.max(18, Math.min(44, Math.floor((available - left - 6) / state.draft.ends)))
+    : 18;
   const width = Math.max(
       6,
       Math.min(48, Math.floor((available - left - 6) / cell)),
@@ -723,6 +777,7 @@ function draw() {
   state.window = frame;
   state.end = frame.end;
   state.pick = frame.pick;
+  renderFootwork(frame);
   const canvas = $("fabric"),
     logicalWidth = left + frame.ends * cell + 3,
     logicalHeight = top + frame.picks * cell + 3,
@@ -733,9 +788,9 @@ function draw() {
   canvas.style.height = `${logicalHeight}px`;
   const context = canvas.getContext("2d");
   context.scale(scale, scale);
-  context.fillStyle = "#f8fafc";
+  context.fillStyle = "#f8f7f1";
   context.fillRect(0, 0, logicalWidth, logicalHeight);
-  context.font = "9px ui-monospace, monospace";
+  context.font = `${cell > 18 ? 12 : 9}px system-ui, sans-serif`;
   context.textAlign = "center";
   context.textBaseline = "middle";
   for (let column = 0; column < frame.ends; column++) {
@@ -743,7 +798,7 @@ function draw() {
       x = left + column * cell;
     context.fillStyle = state.draft.warp_colors[end];
     context.fillRect(x, 2, cell - 1, 8);
-    context.fillStyle = "#516377";
+    context.fillStyle = "#4e594e";
     context.fillText(String(end + 1), x + cell / 2, 18);
     context.fillText(
       state.draft.threading[end] === 0
@@ -762,7 +817,7 @@ function draw() {
         : state.draft.liftplan[pick];
     context.fillStyle = state.draft.weft_colors[pick];
     context.fillRect(2, y + 2, 6, cell - 4);
-    context.fillStyle = pick === state.selected ? "#145ca8" : "#516377";
+    context.fillStyle = pick === state.selected ? "#315942" : "#4e594e";
     context.fillText(String(pick + 1), 23, y + cell / 2);
     for (let column = 0; column < frame.ends; column++) {
       context.fillStyle = fabricColor(
@@ -782,7 +837,7 @@ function draw() {
       );
     }
     if (pick === state.selected) {
-      context.strokeStyle = "#1768ba";
+      context.strokeStyle = "#315942";
       context.lineWidth = 2;
       context.strokeRect(left + 1, y + 1, frame.ends * cell - 2, cell - 2);
     }

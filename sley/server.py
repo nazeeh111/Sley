@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import socket
 
-from .engine import MAX_BODY, exact_keys, parse_json, imported, prepare, example, validate_project
+from .engine import MAX_BODY, exact_keys, parse_json, imported, prepare, example, fixed_pedals_example, validate_project
 from .runtime import Calculator, Busy
 
 PACKAGE = Path(__file__).parent
@@ -63,6 +63,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if self.path == "/api/example":
                 self.json(200, example())
+            elif self.path == "/api/example/fixed-pedals":
+                self.json(200, fixed_pedals_example())
             elif match := re.fullmatch(r"/api/jobs/([a-f0-9]{32})", self.path):
                 self.json(200, self.server.calculator.status(match[1]))
             elif self.path in STATIC:

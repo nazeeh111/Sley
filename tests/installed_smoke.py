@@ -118,6 +118,8 @@ def main():
         request("POST","/api/cancel",{"job_id":job['job_id']})
         assert request("POST","/api/export",job)[0]==409
         fixed = json.loads((installed_path.parent / "examples" / "fixed-pedals.sley.json").read_text())
+        code, data = request("GET", "/api/example/fixed-pedals")
+        assert code == 200 and json.loads(data) == fixed
         code, data = request("POST", "/api/project", {"project": json.dumps(fixed)})
         assert code == 200 and json.loads(data)["project"] == fixed
         assert request("POST", "/api/project", {"project": json.dumps(fixed | {"slot_count": None})})[0] == 400

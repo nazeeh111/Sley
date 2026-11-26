@@ -176,6 +176,11 @@ def export_bundle(payload, result):
     return output.getvalue()
 
 
+def fixed_pedals_example():
+    source = Path(__file__).with_name("examples") / "fixed-pedals.sley.json"
+    return validate_project(source.read_text(encoding="utf-8"))
+
+
 def example():
     return {"wif": (Path(__file__).with_name("examples") / "eight-shaft.wif").read_text(),
             "slot_count": 8, "allowed_pairs": [[i, j] for i in range(1, 5) for j in range(5, 9)]}

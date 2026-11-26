@@ -20,14 +20,17 @@
     <main>
       <section class="start-guide" aria-labelledby="start-title">
         <div>
-          <h1 id="start-title">Keep the draft. Change the footwork.</h1>
-          <p>Fit a weaving draft to your physical pedals and allowed pairs, while preserving its thread structure.</p>
+          <h1 id="start-title">Weaving draft workbench</h1>
+          <p>Keep the drawdown while changing which pedals you press.</p>
         </div>
-        <p class="start-route">Start with <strong>Load example</strong>, then <a href="#constraints-title">set pedals &amp; find a plan</a>. Inspect each pick before exporting the adapted WIF.</p>
+        <div class="start-route">
+          <button id="fixed-example">Try the four-pick draft</button>
+          <p>Three pedals, one allowed pair. Use <a href="#solve">Find plan</a> to check the footwork.</p>
+        </div>
       </section>
       <div class="file-bar" aria-label="Draft files">
         <button id="open-wif">Open WIF</button
-        ><button id="example">Load example</button
+        ><button id="example">Eight-shaft example</button
         ><span class="toolbar-divider"></span
         ><button id="open-project">Open project</button
         ><button id="save-project" disabled>Save project</button
@@ -44,13 +47,141 @@
         /><span id="file-state"></span>
       </div>
       <div id="message" class="message" role="status" aria-live="polite">
-        Open a rising-shed WIF or load the eight-shaft example.
+        Open a rising-shed WIF, a saved project, or a bundled draft.
       </div>
       <div class="workbench">
+        <section class="draft panel" aria-labelledby="draft-title">
+          <div class="draft-heading">
+            <div>
+              <div class="section-heading">
+                <h2 id="draft-title">Fabric draft</h2>
+              </div>
+              <p id="draft-meta" class="draft-meta"></p>
+            </div>
+            <div class="view-switch" role="group" aria-label="Drawdown view">
+              <button id="source-view" aria-pressed="true">Source</button
+              ><button id="adapted-view" aria-pressed="false" disabled>
+                Adapted
+              </button>
+            </div>
+          </div>
+          <div id="grid-empty" class="grid-empty">
+            <svg viewBox="0 0 96 96" aria-hidden="true">
+              <path
+                d="M16 24h64M16 40h64M16 56h64M16 72h64M24 16v64M40 16v64M56 16v64M72 16v64"
+              />
+            </svg>
+            <p>No draft open</p>
+            <span>Open a WIF or try the bundled four-pick draft.</span>
+          </div>
+          <div id="grid-loaded" hidden>
+            <section class="pick" aria-labelledby="pick-title">
+              <div class="section-heading">
+                <h2 id="pick-title">Selected pick</h2>
+              </div>
+              <div class="pick-controls">
+                <button id="pick-prev" aria-label="Previous pick" disabled>←</button
+                ><label for="pick-number"
+                  >Pick
+                  <input
+                    id="pick-number"
+                    type="number"
+                    min="1"
+                    value="1"
+                    disabled /></label
+                ><span id="pick-total">of —</span
+                ><button id="pick-next" aria-label="Next pick" disabled>→</button>
+              </div>
+              <dl class="pick-details">
+                <div>
+                  <dt>Raised shafts</dt>
+                  <dd id="pick-shafts">—</dd>
+                </div>
+                <div>
+                  <dt>Press physical pedals</dt>
+                  <dd id="pick-action">—</dd>
+                </div>
+              </dl>
+            </section>
+            <div class="weave-inspection">
+              <section class="cloth-inspection" aria-label="Drawdown">
+                <div class="grid-legend">
+                  <span><i class="warp-swatch"></i>Warp above</span
+                  ><span><i class="weft-swatch"></i>Weft above</span
+                  ><span id="view-label">Source drawdown</span>
+                </div>
+                <div class="canvas-wrap">
+                  <canvas
+                    id="fabric"
+                    tabindex="0"
+                    role="img"
+                    aria-label="Fabric grid. Arrow keys select a pick or move across ends. Page Up and Page Down move the pick window."
+                  ></canvas>
+                </div>
+                <div class="viewport-controls">
+                  <div class="viewport-group">
+                    <span>Ends</span
+                    ><button id="ends-prev" aria-label="Previous ends">←</button
+                    ><span id="ends-window"></span
+                    ><button id="ends-next" aria-label="Next ends">→</button>
+                  </div>
+                  <div class="viewport-group">
+                    <span>Picks</span
+                    ><button id="picks-prev" aria-label="Previous picks">↑</button
+                    ><span id="picks-window"></span
+                    ><button id="picks-next" aria-label="Next picks">↓</button>
+                  </div>
+                </div>
+                <p class="grid-help">
+                  Select a row to inspect its pick. On the grid, use ↑ ↓ for picks,
+                  ← → for ends and Page Up / Down for windows.
+                </p>
+              </section>
+              <section class="footwork" aria-labelledby="footwork-title">
+                <h3 id="footwork-title" tabindex="-1">Pressing sequence</h3>
+                <p class="hint" id="footwork-note">Find a plan to see the physical presses.</p>
+                <table aria-labelledby="footwork-title">
+                  <thead><tr><th scope="col">Pick</th><th scope="col">Raised shafts</th><th scope="col">Pedals</th></tr></thead>
+                  <tbody id="footwork-rows"></tbody>
+                </table>
+              </section>
+            </div>
+          </div>
+          <div class="inspection" id="tieup-inspection" hidden>
+            <section class="tieup" aria-labelledby="tieup-title">
+              <div class="section-heading">
+                <h2 id="tieup-title" tabindex="-1">Physical tie-up</h2>
+                <span id="tieup-count" class="muted"></span>
+              </div>
+              <div id="tieup-grid" class="tieup-grid"></div>
+            </section>
+          </div>
+        </section>
         <aside class="constraints panel" aria-labelledby="constraints-title">
           <div class="section-heading">
             <h2 id="constraints-title" tabindex="-1">Pedal constraints</h2>
           </div>
+          <div class="solve-controls">
+            <button id="solve" class="primary" disabled>
+              Find plan <span aria-hidden="true">→</span></button
+            ><button id="cancel" disabled>Cancel</button>
+          </div>
+          <div
+            id="solve-state"
+            class="solve-state"
+            role="status"
+            aria-live="polite"
+          >
+            <span id="status-badge" class="status-badge">No result</span>
+            <p id="status-detail"></p>
+          </div>
+          <a id="inspect-footwork" class="inspect-footwork" href="#footwork-title" hidden>Inspect pressing sequence</a>
+          <button id="export" class="export-button" disabled>
+            Export result ZIP <span aria-hidden="true">↗</span>
+          </button>
+          <p class="hint export-hint">
+            Adapted WIF, physical pedal actions and a printable tie-up sheet.
+          </p>
           <label class="field" for="slot-count"
             >Physical pedals
             <select id="slot-count">
@@ -130,11 +261,6 @@
           <p id="pair-note" class="hint">
             Press a pair to allow or disallow it. Presets remain editable.
           </p>
-          <div class="solve-controls">
-            <button id="solve" class="primary" disabled>
-              Find plan <span aria-hidden="true">→</span></button
-            ><button id="cancel" disabled>Cancel</button>
-          </div>
           <details class="existing-editor">
             <summary>Minimize changes to an existing setup</summary>
             <p class="hint">First minimize added or removed shaft connections, then paired presses across all picks. Declare the existing setup separately from fixed assignments.</p>
@@ -148,118 +274,7 @@
             <button id="optimize" disabled>Minimize changes</button>
             <p class="hint">The first feasible plan is compared with the best found plan. A budgeted result is usable, but is only optimal when the search proves it.</p>
           </details>
-          <div
-            id="solve-state"
-            class="solve-state"
-            role="status"
-            aria-live="polite"
-          >
-            <span id="status-badge" class="status-badge">No result</span>
-            <p id="status-detail"></p>
-          </div>
-          <button id="export" class="export-button" disabled>
-            Export result ZIP <span aria-hidden="true">↗</span>
-          </button>
-          <p class="hint export-hint">
-            Adapted WIF, physical pedal actions and a printable tie-up sheet.
-          </p>
         </aside>
-        <section class="draft panel" aria-labelledby="draft-title">
-          <div class="draft-heading">
-            <div>
-              <div class="section-heading">
-                <h2 id="draft-title">Fabric draft</h2>
-              </div>
-              <p id="draft-meta" class="draft-meta"></p>
-            </div>
-            <div class="view-switch" role="group" aria-label="Drawdown view">
-              <button id="source-view" aria-pressed="true">Source</button
-              ><button id="adapted-view" aria-pressed="false" disabled>
-                Adapted
-              </button>
-            </div>
-          </div>
-          <div id="grid-empty" class="grid-empty">
-            <svg viewBox="0 0 96 96" aria-hidden="true">
-              <path
-                d="M16 24h64M16 40h64M16 56h64M16 72h64M24 16v64M40 16v64M56 16v64M72 16v64"
-              />
-            </svg>
-          </div>
-          <div id="grid-loaded" hidden>
-            <section class="pick" aria-labelledby="pick-title">
-              <div class="section-heading">
-                <h2 id="pick-title">Selected pick</h2>
-              </div>
-              <div class="pick-controls">
-                <button id="pick-prev" aria-label="Previous pick" disabled>←</button
-                ><label for="pick-number"
-                  >Pick
-                  <input
-                    id="pick-number"
-                    type="number"
-                    min="1"
-                    value="1"
-                    disabled /></label
-                ><span id="pick-total">of —</span
-                ><button id="pick-next" aria-label="Next pick" disabled>→</button>
-              </div>
-              <dl class="pick-details">
-                <div>
-                  <dt>Raised shafts</dt>
-                  <dd id="pick-shafts">—</dd>
-                </div>
-                <div>
-                  <dt>Press physical pedals</dt>
-                  <dd id="pick-action">—</dd>
-                </div>
-              </dl>
-              <p id="pick-note" class="hint">
-                Physical pedal numbers match the exported WIF and action sheet.
-              </p>
-            </section>
-            <div class="grid-legend">
-              <span><i class="warp-swatch"></i>Warp above</span
-              ><span><i class="weft-swatch"></i>Weft above</span
-              ><span id="view-label">Source drawdown</span>
-            </div>
-            <div class="canvas-wrap">
-              <canvas
-                id="fabric"
-                tabindex="0"
-                role="img"
-                aria-label="Fabric grid. Arrow keys select a pick or move across ends. Page Up and Page Down move the pick window."
-              ></canvas>
-            </div>
-            <div class="viewport-controls">
-              <div class="viewport-group">
-                <span>Ends</span
-                ><button id="ends-prev" aria-label="Previous ends">←</button
-                ><span id="ends-window"></span
-                ><button id="ends-next" aria-label="Next ends">→</button>
-              </div>
-              <div class="viewport-group">
-                <span>Picks</span
-                ><button id="picks-prev" aria-label="Previous picks">↑</button
-                ><span id="picks-window"></span
-                ><button id="picks-next" aria-label="Next picks">↓</button>
-              </div>
-            </div>
-            <p class="grid-help">
-              Select a row to inspect its pick. On the grid, use ↑ ↓ for picks,
-              ← → for ends and Page Up / Down for windows.
-            </p>
-          </div>
-        </section>
-      </div>
-      <div class="inspection">
-        <section class="tieup panel" aria-labelledby="tieup-title">
-          <div class="section-heading">
-            <h2 id="tieup-title">Physical tie-up</h2>
-            <span id="tieup-count" class="muted"></span>
-          </div>
-          <div id="tieup-grid" class="tieup-grid"></div>
-        </section>
       </div>
       <footer>
         <span
