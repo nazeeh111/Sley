@@ -8,7 +8,7 @@ original shafts, then exports the adapted WIF, actions and printable tie-up.
 It runs locally with Python's standard library and your browser.
 
 [Run locally](#run-locally) · [Try this worked draft](docs/presentation/README.md) ·
-[Download the complete example](docs/presentation/worked-example.zip) ·
+[Download the complete example](https://github.com/nazeeh111/Sley/raw/0d2cb6538a16779490bf943294f6b017a05997a3/docs/presentation/worked-example.zip) ·
 [Supported WIF profile](docs/wif.md)
 
 <picture>
